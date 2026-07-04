@@ -773,14 +773,6 @@ fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<(
         })
         .build(app)?;
 
-    #[cfg(not(debug_assertions))]
-    check_for_updates(
-        app.handle().clone(),
-        update,
-        Arc::clone(&pending_update),
-        false,
-    );
-
     Ok(())
 }
 
