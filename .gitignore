@@ -12,6 +12,20 @@ dist
 dist-ssr
 *.local
 
+# WebView/session data. These should stay local and must never be committed.
+EBWebView/
+**/EBWebView/
+Cookies
+Cookies-journal
+Local Storage/
+IndexedDB/
+Service Worker/
+Session Storage/
+Code Cache/
+
+# Updater signing private key. Keep this local and copy it to GitHub Secrets.
+src-tauri/.updater-private/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
