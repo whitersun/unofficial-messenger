@@ -29,10 +29,16 @@ const APP_CHROME_SCRIPT: &str = r##"
     const externalNavigationParam = "__tauri_external";
     const loadTimeoutMs = 15000;
 
+    const forceRootOverflow = () => {
+        document.documentElement?.style.setProperty("overflow-y", "hidden", "important");
+        document.body?.style.setProperty("overflow-y", "hidden", "important");
+    };
+
     const ensureResponsiveStyles = () => {
         const parent = document.head || document.documentElement;
 
         if (!parent || document.getElementById(styleId)) {
+            forceRootOverflow();
             return;
         }
 
@@ -51,6 +57,14 @@ const APP_CHROME_SCRIPT: &str = r##"
                 width: 100% !important;
                 max-width: 100% !important;
                 overflow-x: hidden !important;
+                overflow-y: hidden !important;
+            }
+
+            html#facebook,
+            html#facebook body,
+            html._9dls,
+            html._9t1d {
+                overflow-y: hidden !important;
             }
 
             body, #globalContainer, #pagelet_bluebar, #content, #contentArea, .fb_content, ._li, ._95k9, ._8esf, ._8esj, [role="main"] {
@@ -72,6 +86,7 @@ const APP_CHROME_SCRIPT: &str = r##"
             }
         `;
         parent.appendChild(style);
+        forceRootOverflow();
     };
 
     const hasPageContent = () => {
