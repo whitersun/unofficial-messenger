@@ -214,48 +214,92 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
             || host.startsWith("lookaside.");
     };
 
-    const isPhotoViewerRoute = (url) => {
+    const hasInlineMedia = (anchor) => {
+        return Boolean(anchor.querySelector("img, video, canvas, [role='img']"));
+    };
+
+    const isMessengerMediaUrl = (url) => {
         const host = url.hostname.toLowerCase();
         const path = url.pathname.toLowerCase();
 
-        if (!isMessengerOrFacebookHost(host) && !isImageAssetHost(host)) {
-            return false;
-        }
-
-        return /\.(?:avif|gif|jpe?g|png|webp)$/i.test(path)
-            || /\/(?:photo|photos|media|image|attachment)(?:\.php|\/|$)/i.test(path)
-            || path.includes("/ajax/mercury/attachments/");
+        return isImageAssetHost(host)
+            || (isMessengerOrFacebookHost(host) && (
+                /\.(?:avif|gif|jpe?g|png|webp)$/i.test(path)
+                || /\/(?:photo|photos|media|image|attachment|attachments)(?:\.php|\/|$)/i.test(path)
+                || path.includes("/ajax/mercury/attachments/")
+            ));
     };
 
-    const isLikelyMediaViewerClick = (anchor, url) => {
-        if (!anchor.querySelector("img, video, canvas, [role='img']")) {
-            return false;
+    const visibleTextFor = (root) => {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        const parts = [];
+
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const text = node.nodeValue?.replace(/\s+/g, " ").trim();
+            const parent = node.parentElement;
+
+            if (!text || !parent) {
+                continue;
+            }
+
+            const style = window.getComputedStyle(parent);
+
+            if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
+                continue;
+            }
+
+            if (parent.getClientRects().length === 0) {
+                continue;
+            }
+
+            parts.push(text);
         }
 
-        return isPhotoViewerRoute(url);
+        return parts.join(" ").trim();
     };
 
-    const looksLikeSharedUrl = (anchor, url) => {
-        const host = url.hostname.toLowerCase();
-        const text = anchor.textContent?.trim() || "";
+    const isLikelyLinkPreview = (anchor) => {
+        const text = visibleTextFor(anchor);
 
-        if (host && !isMessengerOrFacebookHost(host)) {
+        if (text.length >= 3) {
             return true;
         }
 
-        return /^(https?:\/\/|www\.)/i.test(text);
+        return Boolean(anchor.querySelector(
+            [
+                '[aria-label*="play" i]',
+                '[aria-label*="watch" i]'
+            ].join(",")
+        ));
     };
 
-    const shouldOpenClickExternally = (anchor, url) => {
+    const externalUrlForClick = (anchor, url) => {
         if (!["http:", "https:"].includes(url.protocol) || isShellNavigationLink(anchor, url)) {
-            return false;
+            return null;
         }
 
-        if (isLikelyMediaViewerClick(anchor, url)) {
-            return false;
+        if (hasInlineMedia(anchor) && isMessengerMediaUrl(url)) {
+            return null;
         }
 
-        return isLikelyConversationArea(anchor) || looksLikeSharedUrl(anchor, url);
+        if (hasInlineMedia(anchor) && !isLikelyLinkPreview(anchor) && isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
+            return null;
+        }
+
+        if (isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
+            const linkShimTarget = url.searchParams.get("u");
+
+            if (linkShimTarget) {
+                try {
+                    return new URL(linkShimTarget);
+                } catch (_) {
+                    return url;
+                }
+            }
+        }
+
+        return url;
     };
 
     window.addEventListener("click", (event) => {
@@ -272,14 +316,16 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
 
         const url = new URL(anchor.href, window.location.href);
 
-        if (!shouldOpenClickExternally(anchor, url)) {
+        const externalUrl = externalUrlForClick(anchor, url);
+
+        if (!externalUrl) {
             return;
         }
 
-        url.searchParams.set(externalNavigationParam, "1");
+        externalUrl.searchParams.set(externalNavigationParam, "1");
         event.preventDefault();
         event.stopPropagation();
-        window.location.href = url.href;
+        window.location.href = externalUrl.href;
     }, true);
 
     ensureResponsiveStyles();
