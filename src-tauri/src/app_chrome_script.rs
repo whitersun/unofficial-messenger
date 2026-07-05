@@ -200,11 +200,46 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
         return Boolean(anchor.closest('[role="main"], [aria-label*="messages" i], [aria-label*="tin nhắn" i]'));
     };
 
+    const isMessengerOrFacebookHost = (host) => {
+        return host === "messenger.com"
+            || host.endsWith(".messenger.com")
+            || host === "facebook.com"
+            || host.endsWith(".facebook.com");
+    };
+
+    const isImageAssetHost = (host) => {
+        return host.endsWith(".fbcdn.net")
+            || host.includes(".xx.fbcdn.net")
+            || host.startsWith("scontent.")
+            || host.startsWith("lookaside.");
+    };
+
+    const isPhotoViewerRoute = (url) => {
+        const host = url.hostname.toLowerCase();
+        const path = url.pathname.toLowerCase();
+
+        if (!isMessengerOrFacebookHost(host) && !isImageAssetHost(host)) {
+            return false;
+        }
+
+        return /\.(?:avif|gif|jpe?g|png|webp)$/i.test(path)
+            || /\/(?:photo|photos|media|image|attachment)(?:\.php|\/|$)/i.test(path)
+            || path.includes("/ajax/mercury/attachments/");
+    };
+
+    const isLikelyMediaViewerClick = (anchor, url) => {
+        if (!anchor.querySelector("img, video, canvas, [role='img']")) {
+            return false;
+        }
+
+        return isPhotoViewerRoute(url);
+    };
+
     const looksLikeSharedUrl = (anchor, url) => {
         const host = url.hostname.toLowerCase();
         const text = anchor.textContent?.trim() || "";
 
-        if (host && host !== "messenger.com" && !host.endsWith(".messenger.com")) {
+        if (host && !isMessengerOrFacebookHost(host)) {
             return true;
         }
 
@@ -213,6 +248,10 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
 
     const shouldOpenClickExternally = (anchor, url) => {
         if (!["http:", "https:"].includes(url.protocol) || isShellNavigationLink(anchor, url)) {
+            return false;
+        }
+
+        if (isLikelyMediaViewerClick(anchor, url)) {
             return false;
         }
 
