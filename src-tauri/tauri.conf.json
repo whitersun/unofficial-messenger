@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "identifier": "io.github.whitersun.unofficial-messenger",
   "build": {
-    "frontendDist": "https://www.messenger.com/"
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../dist"
   },
   "app": {
     "windows": [
@@ -27,7 +28,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -35,16 +35,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQzOEY5MEYzNThDNzlERkEKUldUNm5jZFk4NUNQMDdjTytIQVVSMHRvcGcxQmVmQUlrV1phcTYvdC94WmJQRUVvNytGVHhCMDMK",
-      "endpoints": [
-        "https://github.com/whitersun/unofficial-messenger/releases/latest/download/latest.json"
-      ],
-      "windows": {
-        "installMode": "passive"
-      }
-    }
   }
 }

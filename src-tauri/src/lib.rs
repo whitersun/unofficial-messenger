@@ -10,10 +10,10 @@ use tauri::{
     image::Image,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    window::Color,
     Manager, Url, WebviewWindowBuilder,
 };
 use tauri_plugin_opener::OpenerExt;
-use tauri_plugin_updater::{Update, UpdaterExt};
 
 const APP_CHROME_SCRIPT: &str = r##"
 (function() {
@@ -281,7 +281,6 @@ const MAIN_WINDOW_LABEL: &str = "main";
 const TRAY_MENU_SHOW: &str = "tray-show";
 const TRAY_MENU_HIDE: &str = "tray-hide";
 const TRAY_MENU_RELOAD: &str = "tray-reload";
-const TRAY_MENU_UPDATE: &str = "tray-update";
 const TRAY_MENU_START_WITH_WINDOWS: &str = "tray-start-with-windows";
 const TRAY_MENU_HIDE_ON_CLOSE: &str = "tray-hide-on-close";
 const TRAY_MENU_QUIT: &str = "tray-quit";
@@ -303,7 +302,6 @@ impl Default for AppSettings {
 }
 
 type SharedAppSettings = Arc<Mutex<AppSettings>>;
-type SharedPendingUpdate = Arc<Mutex<Option<Update>>>;
 
 fn is_messenger_or_facebook_host(url: &Url) -> bool {
     url.host_str()
@@ -430,113 +428,6 @@ fn reload_main_window(app: &tauri::AppHandle) {
     with_main_window(app, |window| {
         if let Err(error) = window.reload() {
             eprintln!("failed to reload main window: {error}");
-        }
-    });
-}
-
-fn check_for_updates(
-    app: tauri::AppHandle,
-    update_menu_item: MenuItem<tauri::Wry>,
-    pending_update: SharedPendingUpdate,
-    manual: bool,
-) {
-    tauri::async_runtime::spawn(async move {
-        let _ = update_menu_item.set_enabled(false);
-        let _ = update_menu_item.set_text("Checking for Updates...");
-
-        let check_result = match app.updater() {
-            Ok(updater) => updater.check().await,
-            Err(error) => {
-                eprintln!("failed to initialize updater: {error}");
-                let _ = update_menu_item.set_text("Update Check Failed");
-                let _ = update_menu_item.set_enabled(true);
-                return;
-            }
-        };
-
-        match check_result {
-            Ok(Some(update)) => {
-                let version = update.version.clone();
-
-                match pending_update.lock() {
-                    Ok(mut pending_update) => {
-                        pending_update.replace(update);
-                    }
-                    Err(error) => {
-                        eprintln!("failed to lock pending update state: {error}");
-                    }
-                }
-
-                let _ = update_menu_item.set_text(format!("Update Available: v{version}"));
-                let _ = update_menu_item.set_enabled(true);
-            }
-            Ok(None) => {
-                if let Ok(mut pending_update) = pending_update.lock() {
-                    pending_update.take();
-                }
-
-                let _ = update_menu_item.set_text(if manual {
-                    "No Updates Found"
-                } else {
-                    "Check for Updates"
-                });
-                let _ = update_menu_item.set_enabled(true);
-            }
-            Err(error) => {
-                eprintln!("failed to check for updates: {error}");
-                let _ = update_menu_item.set_text("Update Check Failed");
-                let _ = update_menu_item.set_enabled(true);
-            }
-        }
-    });
-}
-
-fn install_pending_update(
-    update_menu_item: MenuItem<tauri::Wry>,
-    pending_update: SharedPendingUpdate,
-) {
-    let update = match pending_update.lock() {
-        Ok(mut pending_update) => pending_update.take(),
-        Err(error) => {
-            eprintln!("failed to lock pending update state: {error}");
-            None
-        }
-    };
-
-    let Some(update) = update else {
-        let _ = update_menu_item.set_text("Check for Updates");
-        let _ = update_menu_item.set_enabled(true);
-        return;
-    };
-
-    tauri::async_runtime::spawn(async move {
-        let _ = update_menu_item.set_enabled(false);
-        let _ = update_menu_item.set_text("Downloading Update...");
-
-        let mut downloaded = 0usize;
-        let update_result = update
-            .download_and_install(
-                |chunk_length, content_length| {
-                    downloaded += chunk_length;
-
-                    if let Some(content_length) = content_length {
-                        let percent = ((downloaded as f64 / content_length as f64) * 100.0)
-                            .round()
-                            .clamp(0.0, 100.0) as u8;
-                        let _ =
-                            update_menu_item.set_text(format!("Downloading Update... {percent}%"));
-                    }
-                },
-                || {
-                    let _ = update_menu_item.set_text("Installing Update...");
-                },
-            )
-            .await;
-
-        if let Err(error) = update_result {
-            eprintln!("failed to install update: {error}");
-            let _ = update_menu_item.set_text("Update Install Failed");
-            let _ = update_menu_item.set_enabled(true);
         }
     });
 }
@@ -676,19 +567,12 @@ fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<(
         true,
         None::<&str>,
     )?;
-    let update = MenuItem::with_id(
-        app,
-        TRAY_MENU_UPDATE,
-        "Check for Updates",
-        true,
-        None::<&str>,
-    )?;
     let start_with_windows = CheckMenuItem::with_id(
         app,
         TRAY_MENU_START_WITH_WINDOWS,
         "Start with Windows",
         cfg!(windows),
-        is_start_with_windows_enabled(),
+        false,
         None::<&str>,
     )?;
     let hide_on_close = CheckMenuItem::with_id(
@@ -708,7 +592,6 @@ fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<(
             &show,
             &hide,
             &reload,
-            &update,
             &options_separator,
             &start_with_windows,
             &hide_on_close,
@@ -721,10 +604,8 @@ fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<(
         .cloned()
         .expect("missing default window icon");
     let start_with_windows_for_menu = start_with_windows.clone();
+    let start_with_windows_for_startup_check = start_with_windows.clone();
     let hide_on_close_for_menu = hide_on_close.clone();
-    let pending_update = Arc::new(Mutex::new(None));
-    let pending_update_for_menu = Arc::clone(&pending_update);
-    let update_for_menu = update.clone();
     let settings_for_menu = Arc::clone(&settings);
 
     TrayIconBuilder::with_id("messenger-tray")
@@ -751,33 +632,19 @@ fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<(
             TRAY_MENU_SHOW => show_main_window(app),
             TRAY_MENU_HIDE => hide_main_window(app),
             TRAY_MENU_RELOAD => reload_main_window(app),
-            TRAY_MENU_UPDATE => {
-                let has_pending_update = pending_update_for_menu
-                    .lock()
-                    .map(|pending_update| pending_update.is_some())
-                    .unwrap_or(false);
-
-                if has_pending_update {
-                    install_pending_update(
-                        update_for_menu.clone(),
-                        Arc::clone(&pending_update_for_menu),
-                    );
-                } else {
-                    check_for_updates(
-                        app.clone(),
-                        update_for_menu.clone(),
-                        Arc::clone(&pending_update_for_menu),
-                        true,
-                    );
-                }
-            }
             TRAY_MENU_START_WITH_WINDOWS => {
                 let enabled = start_with_windows_for_menu.is_checked().unwrap_or(false);
+                let start_with_windows = start_with_windows_for_menu.clone();
+                let _ = start_with_windows.set_enabled(false);
 
-                if let Err(error) = set_start_with_windows(enabled) {
-                    eprintln!("failed to toggle start with Windows: {error}");
-                    let _ = start_with_windows_for_menu.set_checked(!enabled);
-                }
+                std::thread::spawn(move || {
+                    if let Err(error) = set_start_with_windows(enabled) {
+                        eprintln!("failed to toggle start with Windows: {error}");
+                        let _ = start_with_windows.set_checked(!enabled);
+                    }
+
+                    let _ = start_with_windows.set_enabled(true);
+                });
             }
             TRAY_MENU_HIDE_ON_CLOSE => {
                 let enabled = hide_on_close_for_menu.is_checked().unwrap_or(true);
@@ -787,6 +654,11 @@ fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<(
             _ => {}
         })
         .build(app)?;
+
+    std::thread::spawn(move || {
+        let enabled = is_start_with_windows_enabled();
+        let _ = start_with_windows_for_startup_check.set_checked(enabled);
+    });
 
     Ok(())
 }
@@ -1009,7 +881,6 @@ fn digit_pattern(digit: char) -> [[bool; 3]; 5] {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let window_config = app
@@ -1067,6 +938,10 @@ pub fn run() {
                     }
                 })
                 .build()?;
+            if let Err(error) = window.set_background_color(Some(Color(247, 248, 251, 255))) {
+                eprintln!("failed to set startup background color: {error}");
+            }
+
             create_tray(app, Arc::clone(&settings))?;
 
             let window_for_events = window.clone();
