@@ -118,6 +118,13 @@ pub(crate) fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> taur
 
     std::thread::spawn(move || {
         let enabled = is_start_with_windows_enabled();
+
+        if enabled {
+            if let Err(error) = set_start_with_windows(true) {
+                eprintln!("failed to refresh start with Windows entry: {error}");
+            }
+        }
+
         let _ = start_with_windows_for_startup_check.set_checked(enabled);
     });
 

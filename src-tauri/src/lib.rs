@@ -8,6 +8,7 @@ mod window;
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use app_chrome_script::APP_CHROME_SCRIPT;
 use badge::{unread_count_from_title, update_taskbar_badge};
@@ -16,6 +17,9 @@ use navigation::{
     should_keep_in_webview, should_open_in_app,
 };
 use settings::{is_hide_on_close_enabled, load_settings};
+use startup::{
+    normalize_startup_working_directory, was_launched_from_windows_startup, STARTUP_LOAD_DELAY_MS,
+};
 use tauri::{window::Color, WebviewUrl, WebviewWindowBuilder};
 use tray::create_tray;
 use window::{hide_main_window, navigate_main_window, title_bar_text};
@@ -24,16 +28,34 @@ static POPUP_WINDOW_COUNTER: AtomicUsize = AtomicUsize::new(1);
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    normalize_startup_working_directory();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let window_config = app
+            let mut window_config = app
                 .config()
                 .app
                 .windows
                 .first()
                 .expect("missing main window config")
                 .clone();
+            let launched_from_windows_startup = was_launched_from_windows_startup();
+            let startup_url = match &window_config.url {
+                WebviewUrl::External(url) => Some(url.clone()),
+                _ => None,
+            };
+
+            if launched_from_windows_startup {
+                window_config.url = WebviewUrl::External(
+                    "about:blank"
+                        .parse()
+                        .expect("about:blank should be a valid URL"),
+                );
+                window_config.visible = false;
+                window_config.focus = false;
+            }
+
             let app_handle = app.handle().clone();
             let app_handle_for_navigation = app_handle.clone();
             let app_handle_for_new_window = app_handle.clone();
@@ -67,6 +89,22 @@ pub fn run() {
             if let Err(error) = window.set_background_color(Some(Color(247, 248, 251, 255))) {
                 eprintln!("failed to set startup background color: {error}");
             }
+            if let Some(icon) = app.default_window_icon().cloned() {
+                if let Err(error) = window.set_icon(icon) {
+                    eprintln!("failed to set window icon: {error}");
+                }
+            }
+
+            if launched_from_windows_startup {
+                if let Some(startup_url) = startup_url {
+                    let app_handle_for_startup_load = app_handle.clone();
+
+                    std::thread::spawn(move || {
+                        std::thread::sleep(Duration::from_millis(STARTUP_LOAD_DELAY_MS));
+                        navigate_main_window(&app_handle_for_startup_load, startup_url);
+                    });
+                }
+            }
 
             create_tray(app, Arc::clone(&settings))?;
 
@@ -95,6 +133,11 @@ pub fn run() {
 
 fn handle_navigation_request(app: &tauri::AppHandle, url: &tauri::Url) -> bool {
     if let Some(external_url) = external_url_from_marked_navigation(url) {
+        if is_auth_navigation(&external_url) {
+            navigate_main_window(app, external_url);
+            return false;
+        }
+
         open_in_system_browser(app, &external_url);
         return false;
     }

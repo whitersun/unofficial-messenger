@@ -207,6 +207,43 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
             || host.endsWith(".facebook.com");
     };
 
+    const authNavigationPaths = [
+        "/login",
+        "/login.php",
+        "/checkpoint",
+        "/recover",
+        "/two_factor",
+        "/confirm",
+        "/confirmemail",
+        "/security",
+        "/auth",
+        "/dialog/oauth",
+        "/privacy/consent",
+        "/cookie/consent",
+        "/help/contact"
+    ];
+
+    const isPathOrChild = (path, candidate) => {
+        return path === candidate || path.startsWith(`${candidate}/`);
+    };
+
+    const isAuthNavigationUrl = (url) => {
+        if (!isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
+            return false;
+        }
+
+        const path = url.pathname.toLowerCase().replace(/\/+$/, "") || "/";
+        return authNavigationPaths.some((candidate) => isPathOrChild(path, candidate));
+    };
+
+    const isCurrentAuthSurface = () => {
+        try {
+            return isAuthNavigationUrl(new URL(window.location.href));
+        } catch (_) {
+            return false;
+        }
+    };
+
     const isImageAssetHost = (host) => {
         return host.endsWith(".fbcdn.net")
             || host.includes(".xx.fbcdn.net")
@@ -276,6 +313,14 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
 
     const externalUrlForClick = (anchor, url) => {
         if (!["http:", "https:"].includes(url.protocol) || isShellNavigationLink(anchor, url)) {
+            return null;
+        }
+
+        if (isAuthNavigationUrl(url)) {
+            return null;
+        }
+
+        if (isCurrentAuthSurface() && isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
             return null;
         }
 
