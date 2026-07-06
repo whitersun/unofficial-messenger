@@ -12,6 +12,50 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
     const externalNavigationParam = "__tauri_external";
     const loadTimeoutMs = 15000;
 
+    const isMessengerOrFacebookHost = (host) => {
+        return host === "messenger.com"
+            || host.endsWith(".messenger.com")
+            || host === "facebook.com"
+            || host.endsWith(".facebook.com");
+    };
+
+    const authNavigationPaths = [
+        "/login",
+        "/login.php",
+        "/checkpoint",
+        "/recover",
+        "/two_factor",
+        "/confirm",
+        "/confirmemail",
+        "/security",
+        "/auth",
+        "/dialog/oauth",
+        "/privacy/consent",
+        "/cookie/consent",
+        "/help/contact"
+    ];
+
+    const isPathOrChild = (path, candidate) => {
+        return path === candidate || path.startsWith(`${candidate}/`);
+    };
+
+    const isAuthNavigationUrl = (url) => {
+        if (!isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
+            return false;
+        }
+
+        const path = url.pathname.toLowerCase().replace(/\/+$/, "") || "/";
+        return authNavigationPaths.some((candidate) => isPathOrChild(path, candidate));
+    };
+
+    const isCurrentAuthSurface = () => {
+        try {
+            return isAuthNavigationUrl(new URL(window.location.href));
+        } catch (_) {
+            return false;
+        }
+    };
+
     const forceRootOverflow = () => {
         document.documentElement?.style.setProperty("overflow-y", "hidden", "important");
         document.body?.style.setProperty("overflow-y", "hidden", "important");
@@ -56,7 +100,7 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
                 box-sizing: border-box !important;
             }
 
-            img, video, canvas, iframe, table, form {
+            table, form {
                 max-width: 100% !important;
             }
 
@@ -79,7 +123,24 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
             return false;
         }
 
-        return body.childElementCount > 0 && body.getBoundingClientRect().height > 100;
+        if (body.childElementCount > 0 && body.getBoundingClientRect().height > 100) {
+            return true;
+        }
+
+        return Boolean(body.querySelector([
+            "input",
+            "textarea",
+            "select",
+            "button",
+            "form",
+            "main",
+            '[role="button"]',
+            '[role="main"]'
+        ].join(",")));
+    };
+
+    const shouldSuppressLoadOverlay = () => {
+        return isCurrentAuthSurface() || hasPageContent();
     };
 
     const removeLoadOverlay = () => {
@@ -89,7 +150,7 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
     const showLoadOverlay = () => {
         const parent = document.body || document.documentElement;
 
-        if (!parent || document.getElementById(overlayId) || hasPageContent()) {
+        if (!parent || document.getElementById(overlayId) || shouldSuppressLoadOverlay()) {
             return;
         }
 
@@ -198,50 +259,6 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
         }
 
         return Boolean(anchor.closest('[role="main"], [aria-label*="messages" i], [aria-label*="tin nhắn" i]'));
-    };
-
-    const isMessengerOrFacebookHost = (host) => {
-        return host === "messenger.com"
-            || host.endsWith(".messenger.com")
-            || host === "facebook.com"
-            || host.endsWith(".facebook.com");
-    };
-
-    const authNavigationPaths = [
-        "/login",
-        "/login.php",
-        "/checkpoint",
-        "/recover",
-        "/two_factor",
-        "/confirm",
-        "/confirmemail",
-        "/security",
-        "/auth",
-        "/dialog/oauth",
-        "/privacy/consent",
-        "/cookie/consent",
-        "/help/contact"
-    ];
-
-    const isPathOrChild = (path, candidate) => {
-        return path === candidate || path.startsWith(`${candidate}/`);
-    };
-
-    const isAuthNavigationUrl = (url) => {
-        if (!isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
-            return false;
-        }
-
-        const path = url.pathname.toLowerCase().replace(/\/+$/, "") || "/";
-        return authNavigationPaths.some((candidate) => isPathOrChild(path, candidate));
-    };
-
-    const isCurrentAuthSurface = () => {
-        try {
-            return isAuthNavigationUrl(new URL(window.location.href));
-        } catch (_) {
-            return false;
-        }
     };
 
     const isImageAssetHost = (host) => {
@@ -386,6 +403,9 @@ pub(crate) const APP_CHROME_SCRIPT: &str = r##"
     window.setTimeout(showLoadOverlay, loadTimeoutMs);
     setInterval(() => {
         ensureResponsiveStyles();
+        if (shouldSuppressLoadOverlay()) {
+            removeLoadOverlay();
+        }
     }, 1000);
 })();
 "##;
