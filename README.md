@@ -12,15 +12,16 @@ Install the latest build directly from the `v0.1.3` release:
 | macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-macos.dmg) |
 | Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-linux.deb) |
 
-You can also open the [v0.1.3 release page](https://github.com/whitersun/unofficial-messenger/releases/tag/v0.1.3) and download the installer for your operating system from the assets.
-
-Release installers are built by GitHub Actions for Windows, macOS, and Linux when a version tag like `v0.1.0` is pushed.
+The Windows installer is about 4,552 KB. After installation, the app uses about 12.3 MB of disk space.
 
 ## Features
 
 - Built with Tauri, so it uses the system WebView instead of bundling a full browser runtime.
+- Built with Rust for low CPU and RAM usage.
+- High-performance desktop wrapper for Messenger Web.
 - Supports Messenger calls and video calls through the loaded Messenger web app.
-- Supports image copy and image magnification when the underlying Edge/WebView runtime supports them. If the runtime does not provide those features, they will be added in an app release.
+- Supports image copy.
+- Supports image zoom.
 
 ## Disclaimer
 
