@@ -4,13 +4,15 @@ An unofficial desktop webview wrapper for Messenger, built with Tauri for low CP
 
 ## Downloads
 
-Install the latest build directly:
+Install the latest build directly from the `v0.1.3` release:
 
 | Platform | Download |
 | --- | --- |
-| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/latest/download/unofficial-messenger-next-windows-setup.exe) |
-| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/latest/download/unofficial-messenger-next-macos.dmg) |
-| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/latest/download/unofficial-messenger-next-linux.deb) |
+| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-windows.msi) |
+| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-macos.dmg) |
+| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-linux.deb) |
+
+You can also open the [v0.1.3 release page](https://github.com/whitersun/unofficial-messenger/releases/tag/v0.1.3) and download the installer for your operating system from the assets.
 
 Release installers are built by GitHub Actions for Windows, macOS, and Linux when a version tag like `v0.1.0` is pushed.
 
