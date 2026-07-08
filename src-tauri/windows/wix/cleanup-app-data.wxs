@@ -13,7 +13,7 @@
       Directory="TARGETDIR"
       Execute="deferred"
       Impersonate="yes"
-      ExeCommand='cmd.exe /C del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger" rmdir /S /Q "%APPDATA%\unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger"'
+      ExeCommand='cmd.exe /C del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger-next" rmdir /S /Q "%APPDATA%\unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger-next" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next"'
       Return="ignore" />
 
     <CustomAction
@@ -21,7 +21,7 @@
       Directory="TARGETDIR"
       Execute="deferred"
       Impersonate="yes"
-      ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F &amp; del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger" rmdir /S /Q "%APPDATA%\unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger"'
+      ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F &amp; del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger-next" rmdir /S /Q "%APPDATA%\unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger-next" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next"'
       Return="ignore" />
 
     <InstallExecuteSequence>

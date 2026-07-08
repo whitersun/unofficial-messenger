@@ -4,10 +4,10 @@
   Delete "$APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "UnofficialMessenger"
 
-  RMDir /r "$APPDATA\unofficial-messenger"
-  RMDir /r "$LOCALAPPDATA\unofficial-messenger"
-  RMDir /r "$APPDATA\io.github.whitersun.unofficial-messenger"
-  RMDir /r "$LOCALAPPDATA\io.github.whitersun.unofficial-messenger"
+  RMDir /r "$APPDATA\unofficial-messenger-next"
+  RMDir /r "$LOCALAPPDATA\unofficial-messenger-next"
+  RMDir /r "$APPDATA\io.github.whitersun.unofficial-messenger-next"
+  RMDir /r "$LOCALAPPDATA\io.github.whitersun.unofficial-messenger-next"
 !macroend
 
 !macro NSIS_HOOK_PREINSTALL
