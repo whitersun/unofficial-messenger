@@ -1,7 +1,7 @@
 {
-  "name": "messenger",
+  "name": "unofficial-messenger-next",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -25,3 +25,4 @@
     "vue-tsc": "^3.3.6"
   }
 }
+

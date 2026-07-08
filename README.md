@@ -1,18 +1,24 @@
-# unofficial-messenger
+# unofficial-messenger-next
 
-An unofficial desktop webview wrapper for Messenger, built with Tauri.
+An unofficial desktop webview wrapper for Messenger, built with Tauri for low CPU and RAM usage.
 
 ## Downloads
 
-Installers are published on the [latest release page](https://github.com/whitersun/unofficial-messenger/releases/latest).
+Install the latest build directly:
 
 | Platform | Download |
 | --- | --- |
-| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/latest) |
-| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/latest) |
-| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/latest) |
+| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/latest/download/unofficial-messenger-next-windows-setup.exe) |
+| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/latest/download/unofficial-messenger-next-macos.dmg) |
+| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/latest/download/unofficial-messenger-next-linux.deb) |
 
-Release assets are built by GitHub Actions for Windows, macOS, and Linux when a version tag like `v0.1.0` is pushed.
+Release installers are built by GitHub Actions for Windows, macOS, and Linux when a version tag like `v0.1.0` is pushed.
+
+## Features
+
+- Built with Tauri, so it uses the system WebView instead of bundling a full browser runtime.
+- Supports Messenger calls and video calls through the loaded Messenger web app.
+- Supports image copy and image magnification when the underlying Edge/WebView runtime supports them. If the runtime does not provide those features, they will be added in an app release.
 
 ## Disclaimer
 

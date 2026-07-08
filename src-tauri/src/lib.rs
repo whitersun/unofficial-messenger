@@ -1,5 +1,6 @@
 mod app_chrome_script;
 mod badge;
+mod clipboard;
 mod navigation;
 mod settings;
 mod startup;
@@ -12,9 +13,10 @@ use std::time::Duration;
 
 use app_chrome_script::APP_CHROME_SCRIPT;
 use badge::{unread_count_from_title, update_taskbar_badge};
+use clipboard::copy_image_to_clipboard;
 use navigation::{
-    external_url_from_marked_navigation, is_auth_navigation, open_in_system_browser,
-    should_keep_in_webview, should_open_in_app,
+    external_url_from_marked_navigation, image_url_from_copy_navigation, is_auth_navigation,
+    open_in_system_browser, should_keep_in_webview, should_open_in_app,
 };
 use settings::{is_hide_on_close_enabled, load_settings};
 use startup::{
@@ -32,6 +34,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![copy_image_to_clipboard])
         .setup(|app| {
             let mut window_config = app
                 .config()
@@ -54,6 +57,7 @@ pub fn run() {
                 );
                 window_config.visible = false;
                 window_config.focus = false;
+                window_config.skip_taskbar = true;
             }
 
             let app_handle = app.handle().clone();
@@ -132,6 +136,14 @@ pub fn run() {
 }
 
 fn handle_navigation_request(app: &tauri::AppHandle, url: &tauri::Url) -> bool {
+    if let Some(image_url) = image_url_from_copy_navigation(url) {
+        if let Err(error) = copy_image_to_clipboard(None, Some(image_url.clone())) {
+            eprintln!("failed to copy image from {image_url}: {error}");
+        }
+
+        return false;
+    }
+
     if let Some(external_url) = external_url_from_marked_navigation(url) {
         if is_auth_navigation(&external_url) {
             navigate_main_window(app, external_url);
@@ -155,6 +167,14 @@ fn handle_new_window_request(
     url: tauri::Url,
     features: tauri::webview::NewWindowFeatures,
 ) -> tauri::webview::NewWindowResponse<tauri::Wry> {
+    if let Some(image_url) = image_url_from_copy_navigation(&url) {
+        if let Err(error) = copy_image_to_clipboard(None, Some(image_url.clone())) {
+            eprintln!("failed to copy image from {image_url}: {error}");
+        }
+
+        return tauri::webview::NewWindowResponse::Deny;
+    }
+
     if let Some(external_url) = external_url_from_marked_navigation(&url) {
         open_in_system_browser(app, &external_url);
         return tauri::webview::NewWindowResponse::Deny;

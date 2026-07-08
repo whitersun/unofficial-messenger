@@ -2,6 +2,7 @@ use tauri::Url;
 use tauri_plugin_opener::OpenerExt;
 
 const EXTERNAL_NAVIGATION_PARAM: &str = "__tauri_external";
+const COPY_IMAGE_NAVIGATION_PARAM: &str = "__tauri_copy_image";
 
 fn is_messenger_or_facebook_host(url: &Url) -> bool {
     url.host_str()
@@ -82,6 +83,12 @@ pub(crate) fn external_url_from_marked_navigation(url: &Url) -> Option<Url> {
     }
 
     Some(external_url)
+}
+
+pub(crate) fn image_url_from_copy_navigation(url: &Url) -> Option<String> {
+    url.query_pairs()
+        .find(|(key, value)| key == COPY_IMAGE_NAVIGATION_PARAM && !value.is_empty())
+        .map(|(_, value)| value.into_owned())
 }
 
 pub(crate) fn open_in_system_browser(app: &tauri::AppHandle, url: &Url) {

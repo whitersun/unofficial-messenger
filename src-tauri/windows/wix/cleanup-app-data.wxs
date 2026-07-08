@@ -1,0 +1,33 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <CustomAction
+      Id="StopMessengerBeforeUninstall"
+      Directory="TARGETDIR"
+      Execute="deferred"
+      Impersonate="yes"
+      ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F'
+      Return="ignore" />
+
+    <CustomAction
+      Id="CleanupMessengerAppData"
+      Directory="TARGETDIR"
+      Execute="deferred"
+      Impersonate="yes"
+      ExeCommand='cmd.exe /C del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger" rmdir /S /Q "%APPDATA%\unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger"'
+      Return="ignore" />
+
+    <CustomAction
+      Id="CleanupStaleMessengerAppDataBeforeInstall"
+      Directory="TARGETDIR"
+      Execute="deferred"
+      Impersonate="yes"
+      ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F &amp; del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger" rmdir /S /Q "%APPDATA%\unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger"'
+      Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="CleanupStaleMessengerAppDataBeforeInstall" After="InstallInitialize">NOT Installed AND NOT WIX_UPGRADE_DETECTED</Custom>
+      <Custom Action="StopMessengerBeforeUninstall" Before="RemoveFiles">REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
+      <Custom Action="CleanupMessengerAppData" Before="InstallFinalize">REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
+    </InstallExecuteSequence>
+  </Fragment>
+</Wix>

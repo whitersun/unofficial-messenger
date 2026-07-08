@@ -22,6 +22,16 @@ fn with_main_window(app: &tauri::AppHandle, action: impl FnOnce(tauri::WebviewWi
 
 pub(crate) fn show_main_window(app: &tauri::AppHandle) {
     with_main_window(app, |window| {
+        if let Some(icon) = app.default_window_icon().cloned() {
+            if let Err(error) = window.set_icon(icon) {
+                eprintln!("failed to restore main window icon: {error}");
+            }
+        }
+
+        if let Err(error) = window.set_skip_taskbar(false) {
+            eprintln!("failed to restore main window taskbar entry: {error}");
+        }
+
         if let Err(error) = window.show() {
             eprintln!("failed to show main window: {error}");
         }

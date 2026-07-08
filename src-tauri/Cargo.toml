@@ -1,6 +1,6 @@
 [package]
-name = "messenger"
-version = "0.1.0"
+name = "unofficial-messenger-next"
+version = "0.1.1"
 description = "In App Browser Facebook messenger"
 authors = ["Sunwoo Jun"]
 edition = "2021"
@@ -20,5 +20,10 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
+arboard = "3"
+base64 = "0.22"
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
