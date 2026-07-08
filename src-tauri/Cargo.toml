@@ -1,6 +1,6 @@
 [package]
 name = "unofficial-messenger-next"
-version = "0.1.3"
+version = "0.1.2"
 description = "In App Browser Facebook messenger"
 authors = ["Sunwoo Jun"]
 edition = "2021"
