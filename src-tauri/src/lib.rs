@@ -7,12 +7,12 @@ mod startup;
 mod tray;
 mod window;
 
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use app_chrome_script::APP_CHROME_SCRIPT;
-use badge::{unread_count_from_title, update_taskbar_badge};
+use badge::{clear_taskbar_badge, unread_count_from_title, update_taskbar_badge};
 use clipboard::copy_image_to_clipboard;
 use navigation::{
     external_url_from_marked_navigation, image_url_from_copy_navigation, is_auth_navigation,
@@ -22,7 +22,7 @@ use settings::{is_hide_on_close_enabled, load_settings};
 use startup::{
     normalize_startup_working_directory, was_launched_from_windows_startup, STARTUP_LOAD_DELAY_MS,
 };
-use tauri::{window::Color, WebviewUrl, WebviewWindowBuilder};
+use tauri::{window::Color, Manager, WebviewUrl, WebviewWindowBuilder};
 use tray::create_tray;
 use window::{hide_main_window, navigate_main_window, title_bar_text};
 
@@ -67,6 +67,8 @@ pub fn run() {
             let badge_state = Arc::new(Mutex::new(None));
             let badge_state_for_title = Arc::clone(&badge_state);
 
+            create_tray(app, Arc::clone(&settings))?;
+
             let window = WebviewWindowBuilder::from_config(app, &window_config)?
                 .initialization_script(APP_CHROME_SCRIPT)
                 .on_navigation(move |url| {
@@ -77,10 +79,9 @@ pub fn run() {
                 })
                 .on_document_title_changed(move |window, title| {
                     let title = title.trim();
+                    let unread_count = unread_count_from_title(title);
 
-                    if let Some(unread_count) = unread_count_from_title(title) {
-                        update_taskbar_badge(&window, &badge_state_for_title, Some(unread_count));
-                    }
+                    update_taskbar_badge(&window, &badge_state_for_title, unread_count);
 
                     let title = if title.is_empty() { "Messenger" } else { title };
                     let title = title_bar_text(title);
@@ -110,8 +111,6 @@ pub fn run() {
                 }
             }
 
-            create_tray(app, Arc::clone(&settings))?;
-
             let window_for_events = window.clone();
             let app_handle_for_events = app_handle.clone();
             let settings_for_events = Arc::clone(&settings);
@@ -124,7 +123,7 @@ pub fn run() {
                     }
                 }
                 tauri::WindowEvent::Focused(true) => {
-                    update_taskbar_badge(&window_for_events, &badge_state_for_events, None);
+                    clear_taskbar_badge(&window_for_events, &badge_state_for_events);
                 }
                 _ => {}
             });
@@ -210,6 +209,9 @@ fn create_popup_window(
     );
     let app_handle_for_navigation = app.clone();
     let app_handle_for_new_window = app.clone();
+    let label_for_navigation = label.clone();
+    let has_loaded_real_page = Arc::new(AtomicBool::new(false));
+    let has_loaded_real_page_for_navigation = Arc::clone(&has_loaded_real_page);
 
     WebviewWindowBuilder::new(app, label, WebviewUrl::External(url.clone()))
         .title("Messenger")
@@ -217,7 +219,14 @@ fn create_popup_window(
         .min_inner_size(420.0, 520.0)
         .window_features(features)
         .initialization_script(APP_CHROME_SCRIPT)
-        .on_navigation(move |url| handle_navigation_request(&app_handle_for_navigation, url))
+        .on_navigation(move |url| {
+            handle_popup_navigation_request(
+                &app_handle_for_navigation,
+                &label_for_navigation,
+                &has_loaded_real_page_for_navigation,
+                url,
+            )
+        })
         .on_new_window(move |url, features| {
             handle_new_window_request(&app_handle_for_new_window, url, features)
         })
@@ -231,4 +240,40 @@ fn create_popup_window(
             }
         })
         .build()
+}
+
+fn handle_popup_navigation_request(
+    app: &tauri::AppHandle,
+    label: &str,
+    has_loaded_real_page: &AtomicBool,
+    url: &tauri::Url,
+) -> bool {
+    if is_popup_close_navigation(url) && has_loaded_real_page.load(Ordering::Relaxed) {
+        close_popup_window(app, label);
+        return false;
+    }
+
+    let should_navigate = handle_navigation_request(app, url);
+
+    if should_navigate && is_real_page_navigation(url) {
+        has_loaded_real_page.store(true, Ordering::Relaxed);
+    }
+
+    should_navigate
+}
+
+fn is_popup_close_navigation(url: &tauri::Url) -> bool {
+    url.scheme() == "about" && url.path().eq_ignore_ascii_case("blank")
+}
+
+fn is_real_page_navigation(url: &tauri::Url) -> bool {
+    matches!(url.scheme(), "http" | "https")
+}
+
+fn close_popup_window(app: &tauri::AppHandle, label: &str) {
+    if let Some(window) = app.get_webview_window(label) {
+        if let Err(error) = window.close() {
+            eprintln!("failed to close Messenger popup window {label}: {error}");
+        }
+    }
 }

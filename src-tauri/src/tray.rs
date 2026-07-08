@@ -17,6 +17,7 @@ const TRAY_MENU_RELOAD: &str = "tray-reload";
 const TRAY_MENU_START_WITH_WINDOWS: &str = "tray-start-with-windows";
 const TRAY_MENU_HIDE_ON_CLOSE: &str = "tray-hide-on-close";
 const TRAY_MENU_QUIT: &str = "tray-quit";
+pub(crate) const TRAY_ID: &str = "messenger-tray";
 
 pub(crate) fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> tauri::Result<()> {
     let show = MenuItem::with_id(app, TRAY_MENU_SHOW, "Show", true, None::<&str>)?;
@@ -69,7 +70,7 @@ pub(crate) fn create_tray(app: &tauri::App, settings: SharedAppSettings) -> taur
     let hide_on_close_for_menu = hide_on_close.clone();
     let settings_for_menu = Arc::clone(&settings);
 
-    TrayIconBuilder::with_id("messenger-tray")
+    TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon)
         .tooltip("Messenger")
         .menu(&menu)

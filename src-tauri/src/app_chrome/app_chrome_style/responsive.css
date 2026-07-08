@@ -1,0 +1,86 @@
+html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+html.tauri-messenger-lock-body-overflow,
+html.tauri-messenger-lock-body-overflow body,
+html#facebook.tauri-messenger-lock-body-overflow,
+html#facebook.tauri-messenger-lock-body-overflow body,
+html._9dls.tauri-messenger-lock-body-overflow,
+html._9t1d.tauri-messenger-lock-body-overflow {
+    overflow-y: hidden !important;
+}
+
+html.tauri-messenger-allow-body-overflow,
+html.tauri-messenger-allow-body-overflow body {
+    overflow-y: auto !important;
+}
+
+body, #globalContainer, #pagelet_bluebar, #content, #contentArea, .fb_content, ._li, ._95k9, ._8esf, ._8esj, [role="main"] {
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+}
+
+table, form {
+    max-width: 100% !important;
+}
+
+@media (max-width: 719.98px) {
+    #globalContainer, #content, #contentArea, .fb_content, ._li, ._95k9, ._8esf, ._8esj {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+#tauri-messenger-thread-list-toggle {
+    --thread-size: 28px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    
+    position: fixed;
+    top: max(33px, env(safe-area-inset-top));
+    right: max(160px, env(safe-area-inset-right));
+    width: var(--thread-size);
+    height: var(--thread-size);
+
+    padding: 0;
+    color: var(--mwp-header-button-color, #6173ff);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 2147483645;
+}
+
+html.tauri-messenger-thread-list-toggle-visible #tauri-messenger-thread-list-toggle {
+    display: flex;
+}
+
+#tauri-messenger-thread-list-toggle:hover,
+#tauri-messenger-thread-list-toggle:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+}
+
+#tauri-messenger-thread-list-toggle svg {
+    width: var(--thread-size);
+    height: var(--thread-size);
+    display: block;
+    fill: none;
+    pointer-events: none;
+}
+
+#tauri-messenger-thread-list-toggle[data-collapsed="true"] svg {
+    transform: scaleX(-1);
+}
+
+@media (max-width: 719.98px) {
+    #tauri-messenger-thread-list-toggle {
+        display: none !important;
+    }
+}

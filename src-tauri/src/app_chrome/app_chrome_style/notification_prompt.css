@@ -1,0 +1,97 @@
+#tauri-messenger-notification-permission {
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top));
+    left: 50%;
+    z-index: 2147483647;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(520px, calc(100vw - 24px));
+    padding: 12px;
+    color: #f5f7fb;
+    background: rgba(28, 30, 36, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.34);
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transform: translateX(-50%);
+}
+
+#tauri-messenger-notification-permission .tauri-messenger-notification-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#tauri-messenger-notification-permission .tauri-messenger-notification-title {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+#tauri-messenger-notification-permission .tauri-messenger-notification-message {
+    margin-top: 2px;
+    color: rgba(245, 247, 251, 0.74);
+    font-size: 12px;
+    line-height: 17px;
+}
+
+#tauri-messenger-notification-permission button {
+    min-height: 32px;
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    border: 0;
+    cursor: pointer;
+}
+
+#tauri-messenger-notification-permission button[data-action="allow"] {
+    flex: 0 0 auto;
+    padding: 0 12px;
+    font-weight: 700;
+    background: #0866ff;
+    border-radius: 6px;
+}
+
+#tauri-messenger-notification-permission button[data-action="dismiss"] {
+    flex: 0 0 32px;
+    width: 32px;
+    padding: 0;
+    color: rgba(245, 247, 251, 0.72);
+    background: transparent;
+    border-radius: 6px;
+    text-align: center;
+}
+
+#tauri-messenger-notification-permission button:hover {
+    filter: brightness(1.08);
+}
+
+#tauri-messenger-notification-permission button[data-action="dismiss"]:hover {
+    background: rgba(255, 255, 255, 0.12);
+    filter: none;
+}
+
+@media (max-width: 520px) {
+    #tauri-messenger-notification-permission {
+        align-items: stretch;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    #tauri-messenger-notification-permission .tauri-messenger-notification-copy {
+        flex-basis: calc(100% - 42px);
+        order: 1;
+    }
+
+    #tauri-messenger-notification-permission button[data-action="dismiss"] {
+        order: 2;
+        margin-left: auto;
+    }
+
+    #tauri-messenger-notification-permission button[data-action="allow"] {
+        order: 3;
+        flex-basis: 100%;
+    }
+}

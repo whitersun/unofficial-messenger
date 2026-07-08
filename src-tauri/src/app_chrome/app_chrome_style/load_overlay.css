@@ -1,0 +1,39 @@
+#tauri-messenger-load-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: grid;
+    place-items: center;
+    background: rgba(10, 10, 14, 0.2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#tauri-messenger-load-overlay .tauri-messenger-load-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    color: #f5f7fb;
+    background: #1f2028;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.32);
+}
+
+#tauri-messenger-load-overlay .tauri-messenger-load-title {
+    font-size: 13px;
+    line-height: 18px;
+}
+
+#tauri-messenger-load-overlay button {
+    min-height: 32px;
+    padding: 0 12px;
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    background: #0866ff;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}

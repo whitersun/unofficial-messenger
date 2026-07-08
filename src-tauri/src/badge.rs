@@ -1,7 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-#[cfg(windows)]
-use tauri::image::Image;
+use tauri::{image::Image, Manager};
+
+use crate::tray::TRAY_ID;
 
 const ENABLE_TASKBAR_BADGE: bool = true;
 
@@ -22,12 +23,40 @@ pub(crate) fn update_taskbar_badge(
     badge_state: &Arc<Mutex<Option<i64>>>,
     unread_count: Option<i64>,
 ) {
+    apply_taskbar_badge(window, badge_state, BadgeUpdate::FromTitle(unread_count));
+}
+
+pub(crate) fn clear_taskbar_badge(
+    window: &tauri::WebviewWindow,
+    badge_state: &Arc<Mutex<Option<i64>>>,
+) {
+    apply_taskbar_badge(window, badge_state, BadgeUpdate::Clear);
+}
+
+enum BadgeUpdate {
+    FromTitle(Option<i64>),
+    Clear,
+}
+
+fn apply_taskbar_badge(
+    window: &tauri::WebviewWindow,
+    badge_state: &Arc<Mutex<Option<i64>>>,
+    update: BadgeUpdate,
+) {
     if !ENABLE_TASKBAR_BADGE {
+        #[cfg(not(windows))]
         let _ = window.set_badge_count(None);
         #[cfg(windows)]
         let _ = window.set_overlay_icon(None);
+        update_tray_unread_dot(window, None);
         return;
     }
+
+    let unread_count = match update {
+        BadgeUpdate::FromTitle(None) => return,
+        BadgeUpdate::FromTitle(unread_count) => unread_count,
+        BadgeUpdate::Clear => None,
+    };
 
     let mut current_badge = match badge_state.lock() {
         Ok(current_badge) => current_badge,
@@ -44,6 +73,7 @@ pub(crate) fn update_taskbar_badge(
     *current_badge = unread_count;
     drop(current_badge);
 
+    #[cfg(not(windows))]
     if let Err(error) = window.set_badge_count(unread_count) {
         eprintln!("failed to update badge count: {error}");
     }
@@ -51,6 +81,76 @@ pub(crate) fn update_taskbar_badge(
     #[cfg(windows)]
     if let Err(error) = window.set_overlay_icon(unread_count.map(overlay_icon_for_count)) {
         eprintln!("failed to update overlay icon: {error}");
+    }
+
+    update_tray_unread_dot(window, unread_count);
+}
+
+fn update_tray_unread_dot(window: &tauri::WebviewWindow, unread_count: Option<i64>) {
+    let app = window.app_handle();
+    let Some(tray) = app.tray_by_id(TRAY_ID) else {
+        return;
+    };
+    let Some(icon) = app.default_window_icon().cloned() else {
+        return;
+    };
+    let next_icon = unread_count
+        .filter(|count| *count > 0)
+        .map(|_| tray_icon_with_unread_dot(&icon))
+        .unwrap_or(icon);
+
+    if let Err(error) = tray.set_icon(Some(next_icon)) {
+        eprintln!("failed to update tray unread dot: {error}");
+    }
+}
+
+fn tray_icon_with_unread_dot(icon: &Image<'_>) -> Image<'static> {
+    let width = icon.width();
+    let height = icon.height();
+    let min_side = width.min(height) as f32;
+    let dot_radius = (min_side * 0.16).max(2.5);
+    let edge_padding = (min_side * 0.08).max(1.0);
+    let center_x = width as f32 - dot_radius - edge_padding;
+    let center_y = dot_radius + edge_padding;
+    let mut rgba = icon.rgba().to_vec();
+
+    draw_circle(
+        &mut rgba,
+        width,
+        height,
+        center_x,
+        center_y,
+        dot_radius,
+        [255, 59, 48, 255],
+    );
+
+    Image::new_owned(rgba, width, height)
+}
+
+fn draw_circle(
+    rgba: &mut [u8],
+    width: u32,
+    height: u32,
+    center_x: f32,
+    center_y: f32,
+    radius: f32,
+    color: [u8; 4],
+) {
+    let left = (center_x - radius).floor().max(0.0) as u32;
+    let top = (center_y - radius).floor().max(0.0) as u32;
+    let right = (center_x + radius).ceil().min(width as f32 - 1.0) as u32;
+    let bottom = (center_y + radius).ceil().min(height as f32 - 1.0) as u32;
+
+    for y in top..=bottom {
+        for x in left..=right {
+            let dx = x as f32 + 0.5 - center_x;
+            let dy = y as f32 + 0.5 - center_y;
+
+            if (dx * dx + dy * dy).sqrt() <= radius {
+                let index = (y as usize * width as usize + x as usize) * 4;
+                rgba[index..index + 4].copy_from_slice(&color);
+            }
+        }
     }
 }
 
