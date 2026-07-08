@@ -19,14 +19,17 @@ jobs:
         include:
           - name: Windows
             platform: windows-latest
-            asset_name: unofficial-messenger-next-windows-setup.exe
+            bundle: msi
+            asset_name: unofficial-messenger-next-windows.msi
             artifact_name: windows-installer
           - name: macOS
             platform: macos-latest
+            bundle: dmg
             asset_name: unofficial-messenger-next-macos.dmg
             artifact_name: macos-installer
           - name: Linux
             platform: ubuntu-22.04
+            bundle: deb
             asset_name: unofficial-messenger-next-linux.deb
             artifact_name: linux-installer
 
@@ -50,16 +53,16 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build production app
-        run: bun run tauri build
+        run: bun run tauri build --bundles ${{ matrix.bundle }}
 
       - name: Collect Windows installer
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force release-assets | Out-Null
-          $installer = Get-ChildItem "src-tauri/target/release/bundle/nsis" -Filter "*-setup.exe" | Select-Object -First 1
+          $installer = Get-ChildItem "src-tauri/target/release/bundle/msi" -Filter "*.msi" | Select-Object -First 1
           if (-not $installer) {
-            throw "Windows NSIS installer was not found."
+            throw "Windows MSI installer was not found."
           }
           Copy-Item $installer.FullName "release-assets/${{ matrix.asset_name }}"
 
@@ -112,6 +115,6 @@ jobs:
           prerelease: false
           make_latest: true
           files: |
-            release-assets/unofficial-messenger-next-windows-setup.exe
+            release-assets/unofficial-messenger-next-windows.msi
             release-assets/unofficial-messenger-next-macos.dmg
             release-assets/unofficial-messenger-next-linux.deb
