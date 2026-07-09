@@ -8,7 +8,7 @@ cleanup_home() {
   [ "$home_dir" != "/" ] || return 0
   [ -d "$home_dir" ] || return 0
 
-  for app_id in unofficial-messenger-next io.github.whitersun.unofficial-messenger-next; do
+  for app_id in unofficial-messenger-next unofficial-messenger io.github.whitersun.unofficial-messenger-next io.github.whitersun.unofficial-messenger; do
     rm -rf "$home_dir/.config/$app_id"
     rm -rf "$home_dir/.cache/$app_id"
     rm -rf "$home_dir/.local/share/$app_id"

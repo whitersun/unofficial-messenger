@@ -33,7 +33,8 @@
         "installerHooks": "windows/nsis/uninstall-hooks.nsh"
       },
       "wix": {
-        "fragmentPaths": ["windows/wix/cleanup-app-data.wxs"]
+        "fragmentPaths": ["windows/wix/cleanup-app-data.wxs"],
+        "componentRefs": ["CleanupAppDataActionAnchor"]
       }
     },
     "linux": {
@@ -55,7 +56,6 @@
     ]
   }
 }
-
 
 
 

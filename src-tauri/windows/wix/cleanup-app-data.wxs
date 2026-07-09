@@ -1,10 +1,22 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="CleanupAppDataActionAnchor" Guid="22A7DEEC-E60B-4758-85FC-DF4286218F7C" Win64="yes">
+        <RegistryValue
+          Root="HKLM"
+          Key="Software\unofficial-messenger-next"
+          Name="CleanupAppDataActionAnchor"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
     <CustomAction
       Id="StopMessengerBeforeUninstall"
       Directory="TARGETDIR"
       Execute="deferred"
-      Impersonate="yes"
+      Impersonate="no"
       ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F'
       Return="ignore" />
 
@@ -12,20 +24,20 @@
       Id="CleanupMessengerAppData"
       Directory="TARGETDIR"
       Execute="deferred"
-      Impersonate="yes"
-      ExeCommand='cmd.exe /C del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger-next" rmdir /S /Q "%APPDATA%\unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger-next" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next"'
+      Impersonate="no"
+      ExeCommand='cmd.exe /C for /D %U in ("%SystemDrive%\Users\*") do @(del /F /Q "%~fU\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" 2&gt;NUL &amp; for %A in (unofficial-messenger-next unofficial-messenger io.github.whitersun.unofficial-messenger-next io.github.whitersun.unofficial-messenger) do @(if exist "%~fU\AppData\Local\%A" rmdir /S /Q "%~fU\AppData\Local\%A" &amp; if exist "%~fU\AppData\Roaming\%A" rmdir /S /Q "%~fU\AppData\Roaming\%A"))'
       Return="ignore" />
 
     <CustomAction
       Id="CleanupStaleMessengerAppDataBeforeInstall"
       Directory="TARGETDIR"
       Execute="deferred"
-      Impersonate="yes"
-      ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F &amp; del /F /Q "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" &amp; reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v UnofficialMessenger /f &amp; if exist "%APPDATA%\unofficial-messenger-next" rmdir /S /Q "%APPDATA%\unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\unofficial-messenger-next" &amp; if exist "%APPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%APPDATA%\io.github.whitersun.unofficial-messenger-next" &amp; if exist "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next" rmdir /S /Q "%LOCALAPPDATA%\io.github.whitersun.unofficial-messenger-next"'
+      Impersonate="no"
+      ExeCommand='cmd.exe /C taskkill /IM unofficial-messenger-next.exe /F &amp; for /D %U in ("%SystemDrive%\Users\*") do @(del /F /Q "%~fU\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Unofficial Messenger.lnk" 2&gt;NUL &amp; for %A in (unofficial-messenger-next unofficial-messenger io.github.whitersun.unofficial-messenger-next io.github.whitersun.unofficial-messenger) do @(if exist "%~fU\AppData\Local\%A" rmdir /S /Q "%~fU\AppData\Local\%A" &amp; if exist "%~fU\AppData\Roaming\%A" rmdir /S /Q "%~fU\AppData\Roaming\%A"))'
       Return="ignore" />
 
     <InstallExecuteSequence>
-      <Custom Action="CleanupStaleMessengerAppDataBeforeInstall" After="InstallInitialize">NOT Installed AND NOT WIX_UPGRADE_DETECTED</Custom>
+      <Custom Action="CleanupStaleMessengerAppDataBeforeInstall" After="RemoveExistingProducts">NOT Installed AND NOT WIX_UPGRADE_DETECTED</Custom>
       <Custom Action="StopMessengerBeforeUninstall" Before="RemoveFiles">REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
       <Custom Action="CleanupMessengerAppData" Before="InstallFinalize">REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
     </InstallExecuteSequence>

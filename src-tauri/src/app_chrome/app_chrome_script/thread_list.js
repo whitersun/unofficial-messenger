@@ -48,6 +48,8 @@
     };
 
     const messengerConversationHeaderActionAnchor = () => {
+        const threadList = messengerThreadListElement();
+        const threadListRect = threadList?.getBoundingClientRect();
         const reliableActions = Array.from(document.querySelectorAll(messengerHeaderActionSelector))
             .filter((element) => {
                 if (
@@ -55,21 +57,23 @@
                     || element.id === threadListToggleButtonId
                     || element.closest(`#${threadListToggleButtonId}`)
                     || element.closest('[role="navigation"]')
-                    || !isMessengerConversationHeaderActionLabel(element.getAttribute("aria-label"))
                     || !isVisibleElement(element)
                 ) {
                     return false;
                 }
 
                 const rect = element.getBoundingClientRect();
+                const leftEdge = threadListRect ? threadListRect.right - 16 : 0;
+                const label = element.getAttribute("aria-label");
 
                 return rect.top >= 0
-                    && rect.top <= 96
-                    && rect.right >= window.innerWidth - 280
+                    && rect.top <= 120
+                    && rect.left >= leftEdge
                     && rect.width >= 16
                     && rect.width <= 72
                     && rect.height >= 16
-                    && rect.height <= 72;
+                    && rect.height <= 72
+                    && isMessengerConversationHeaderActionLabel(label);
             })
             .sort((first, second) => {
                 return first.getBoundingClientRect().left - second.getBoundingClientRect().left;
@@ -85,48 +89,6 @@
             colorElement,
             positionElement: colorElement
         };
-    };
-
-    const nearbyHeaderActionBefore = (anchorElement, desiredLeft, desiredRight) => {
-        if (!(anchorElement instanceof HTMLElement)) {
-            return null;
-        }
-
-        const anchorRect = anchorElement.getBoundingClientRect();
-        const anchorCenterY = anchorRect.top + anchorRect.height / 2;
-        const blockers = Array.from(document.querySelectorAll(messengerHeaderActionSelector))
-            .filter((element) => {
-                if (
-                    !(element instanceof HTMLElement)
-                    || element === anchorElement
-                    || element.id === threadListToggleButtonId
-                    || element.closest(`#${threadListToggleButtonId}`)
-                    || element.closest('[role="navigation"]')
-                    || !isVisibleElement(element)
-                ) {
-                    return false;
-                }
-
-                const rect = element.getBoundingClientRect();
-                const centerY = rect.top + rect.height / 2;
-
-                return rect.top >= 0
-                    && rect.top <= 96
-                    && rect.right <= anchorRect.left + 8
-                    && rect.right >= anchorRect.left - 128
-                    && rect.width >= 16
-                    && rect.width <= 120
-                    && rect.height >= 16
-                    && rect.height <= 72
-                    && Math.abs(centerY - anchorCenterY) <= 16
-                    && rect.left < desiredRight
-                    && rect.right > desiredLeft;
-            })
-            .sort((first, second) => {
-                return first.getBoundingClientRect().left - second.getBoundingClientRect().left;
-            });
-
-        return blockers[0] || null;
     };
 
     const isUsableCssColor = (value) => {
@@ -306,6 +268,8 @@
         const root = document.documentElement;
         const button = ensureMessengerThreadListToggleButton();
         const headerActionAnchor = messengerConversationHeaderActionAnchor();
+        const buttonRect = button?.getBoundingClientRect();
+        const buttonSize = buttonRect?.width || 28;
         const shouldShow = hasAuthenticatedMessengerShell()
             && Boolean(messengerThreadListElement())
             && Boolean(headerActionAnchor);
@@ -319,20 +283,9 @@
 
         if (headerActionAnchor) {
             const headerActionRect = headerActionAnchor.positionElement.getBoundingClientRect();
-            const buttonRect = button.getBoundingClientRect();
-            const buttonSize = buttonRect.width || 28;
             const gap = 8;
             const headerActionColor = messengerHeaderActionIconColor(headerActionAnchor.colorElement);
             let nextButtonLeft = Math.round(headerActionRect.left - gap - buttonSize);
-            const blocker = nearbyHeaderActionBefore(
-                headerActionAnchor.positionElement,
-                nextButtonLeft,
-                nextButtonLeft + buttonSize
-            );
-
-            if (blocker) {
-                nextButtonLeft = Math.round(blocker.getBoundingClientRect().left - gap - buttonSize);
-            }
 
             button.style.top = `${Math.max(0, Math.round(headerActionRect.top + (headerActionRect.height - buttonSize) / 2))}px`;
             button.style.right = `${Math.max(8, Math.round(window.innerWidth - nextButtonLeft - buttonSize))}px`;
