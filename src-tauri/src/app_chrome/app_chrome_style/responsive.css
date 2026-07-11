@@ -44,7 +44,7 @@ table, form {
 
     position: fixed;
     left: max(19px, env(safe-area-inset-left));
-    bottom: max(92px, env(safe-area-inset-bottom));
+    bottom: max(150px, env(safe-area-inset-bottom));
     width: var(--thread-size);
     height: var(--thread-size);
 
