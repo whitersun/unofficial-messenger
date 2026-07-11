@@ -4,15 +4,17 @@ An unofficial desktop webview wrapper for Messenger, built with Tauri for low CP
 
 ## Downloads
 
-Install the latest build directly from the `v0.1.3` release:
+Install the latest build directly from the `v0.1.5` release:
 
 | Platform | Download |
 | --- | --- |
-| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-windows.msi) |
-| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-macos.dmg) |
-| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.3/unofficial-messenger-next-linux.deb) |
+| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.5/unofficial-messenger-next-windows.msi) |
+| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.5/unofficial-messenger-next-macos.dmg) |
+| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.5/unofficial-messenger-next-linux.deb) |
 
-The Windows installer is about 4,552 KB. After installation, the app uses about 12.3 MB of disk space.
+You can also open the [v0.1.5 release page](https://github.com/whitersun/unofficial-messenger/releases/tag/v0.1.5) and download the installer for your operating system from the assets.
+
+The Windows installer is about 4,516 KB. After installation, the app uses about 12.3 MB of disk space.
 
 ## Features
 
@@ -22,6 +24,7 @@ The Windows installer is about 4,552 KB. After installation, the app uses about 
 - Supports Messenger calls and video calls through the loaded Messenger web app.
 - Supports image copy.
 - Supports image zoom.
+- Supports toggle users.
 
 ## Disclaimer
 
