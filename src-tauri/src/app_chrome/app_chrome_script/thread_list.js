@@ -5,35 +5,11 @@
         '[role="navigation"][aria-label*="conversation list" i]'
     ].join(",");
 
-    const messengerHeaderActionSelector = [
-        'a[aria-label]',
-        'button[aria-label]',
-        '[role="link"][aria-label]',
-        '[role="button"][aria-label]'
-    ].join(",");
-
-    const isMessengerConversationHeaderActionLabel = (label) => {
-        const normalizedLabel = (label || "").trim().toLowerCase();
-
-        return [
-            "call",
-            "voice",
-            "audio",
-            "phone",
-            "video",
-            "info",
-            "information",
-            "details",
-            "gọi",
-            "thoại",
-            "cuộc gọi",
-            "thông tin",
-            "chi tiết"
-        ].some((token) => normalizedLabel.includes(token));
-    };
-
     const messengerThreadListElement = () => {
-        const candidates = Array.from(document.querySelectorAll(messengerThreadListSelector));
+        const candidates = [
+            ...document.querySelectorAll(messengerThreadListSelector),
+            ...document.querySelectorAll('[role="navigation"]')
+        ];
 
         return candidates.find((element) => {
             if (!(element instanceof HTMLElement) || element.closest('[role="main"]')) {
@@ -42,129 +18,14 @@
 
             const rect = element.getBoundingClientRect();
             const maxLeft = Math.max(220, Math.min(680, window.innerWidth * 0.5));
+            const isManagedCollapsed = element.style.getPropertyValue(messengerCardMinWidthProperty).trim() === "0"
+                && element.style.getPropertyValue(messengerCardMaxWidthProperty).trim() === "0";
 
-            return rect.left >= 0 && rect.left < maxLeft;
+            return rect.left >= 0
+                && rect.left < maxLeft
+                && (rect.width >= 180 || isManagedCollapsed)
+                && rect.height >= 240;
         }) || null;
-    };
-
-    const messengerConversationHeaderActionAnchor = () => {
-        const threadList = messengerThreadListElement();
-        const threadListRect = threadList?.getBoundingClientRect();
-        const reliableActions = Array.from(document.querySelectorAll(messengerHeaderActionSelector))
-            .filter((element) => {
-                if (
-                    !(element instanceof HTMLElement)
-                    || element.id === threadListToggleButtonId
-                    || element.closest(`#${threadListToggleButtonId}`)
-                    || element.closest('[role="navigation"]')
-                    || !isVisibleElement(element)
-                ) {
-                    return false;
-                }
-
-                const rect = element.getBoundingClientRect();
-                const leftEdge = threadListRect ? threadListRect.right - 16 : 0;
-                const label = element.getAttribute("aria-label");
-
-                return rect.top >= 0
-                    && rect.top <= 120
-                    && rect.left >= leftEdge
-                    && rect.width >= 16
-                    && rect.width <= 72
-                    && rect.height >= 16
-                    && rect.height <= 72
-                    && isMessengerConversationHeaderActionLabel(label);
-            })
-            .sort((first, second) => {
-                return first.getBoundingClientRect().left - second.getBoundingClientRect().left;
-            });
-
-        const colorElement = reliableActions[0] || null;
-
-        if (!colorElement) {
-            return null;
-        }
-
-        return {
-            colorElement,
-            positionElement: colorElement
-        };
-    };
-
-    const isUsableCssColor = (value) => {
-        const color = (value || "").trim();
-
-        return Boolean(color)
-            && color !== "none"
-            && color !== "transparent"
-            && !/^rgba?\(\s*0\s*,\s*0\s*,\s*0\s*(?:,\s*0\s*)?\)$/i.test(color);
-    };
-
-    const resolvedColorInScope = (scope, colorValue) => {
-        if (!colorValue || !(scope instanceof HTMLElement)) {
-            return null;
-        }
-
-        const probe = document.createElement("span");
-        probe.style.position = "absolute";
-        probe.style.width = "0";
-        probe.style.height = "0";
-        probe.style.overflow = "hidden";
-        probe.style.pointerEvents = "none";
-        probe.style.color = colorValue;
-
-        try {
-            scope.appendChild(probe);
-            const resolvedColor = window.getComputedStyle(probe).color;
-            return isUsableCssColor(resolvedColor) ? resolvedColor : null;
-        } catch (_) {
-            return null;
-        } finally {
-            probe.remove();
-        }
-    };
-
-    const messengerHeaderActionIconColor = (headerAction) => {
-        if (!(headerAction instanceof HTMLElement)) {
-            return null;
-        }
-
-        const headerActionStyle = window.getComputedStyle(headerAction);
-        const scopedVariableColor = resolvedColorInScope(headerAction, "var(--mwp-header-button-color)")
-            || resolvedColorInScope(headerAction, "var(--primary-icon)");
-
-        if (scopedVariableColor) {
-            return scopedVariableColor;
-        }
-
-        const iconCandidates = [
-            ...headerAction.querySelectorAll("svg, path, use, i, span, div"),
-            headerAction
-        ];
-
-        for (const candidate of iconCandidates) {
-            const style = window.getComputedStyle(candidate);
-            const fill = style.fill;
-            const stroke = style.stroke;
-            const color = style.color;
-
-            if (isUsableCssColor(fill)) {
-                return fill;
-            }
-
-            if (isUsableCssColor(stroke)) {
-                return stroke;
-            }
-
-            if (isUsableCssColor(color)) {
-                return color;
-            }
-        }
-
-        const variableColor = headerActionStyle.getPropertyValue("--mwp-header-button-color").trim()
-            || headerActionStyle.getPropertyValue("--primary-icon").trim();
-
-        return isUsableCssColor(variableColor) ? variableColor : null;
     };
 
     const isMessengerThreadListCollapsed = () => {
@@ -267,12 +128,7 @@
     const syncMessengerThreadListToggleButton = () => {
         const root = document.documentElement;
         const button = ensureMessengerThreadListToggleButton();
-        const headerActionAnchor = messengerConversationHeaderActionAnchor();
-        const buttonRect = button?.getBoundingClientRect();
-        const buttonSize = buttonRect?.width || 28;
-        const shouldShow = hasAuthenticatedMessengerShell()
-            && Boolean(messengerThreadListElement())
-            && Boolean(headerActionAnchor);
+        const shouldShow = hasAuthenticatedMessengerShell() && Boolean(messengerThreadListElement());
         const collapsed = isMessengerThreadListCollapsed();
 
         if (!button || !root) {
@@ -280,22 +136,6 @@
         }
 
         root.classList.toggle("tauri-messenger-thread-list-toggle-visible", shouldShow);
-
-        if (headerActionAnchor) {
-            const headerActionRect = headerActionAnchor.positionElement.getBoundingClientRect();
-            const gap = 8;
-            const headerActionColor = messengerHeaderActionIconColor(headerActionAnchor.colorElement);
-            let nextButtonLeft = Math.round(headerActionRect.left - gap - buttonSize);
-
-            button.style.top = `${Math.max(0, Math.round(headerActionRect.top + (headerActionRect.height - buttonSize) / 2))}px`;
-            button.style.right = `${Math.max(8, Math.round(window.innerWidth - nextButtonLeft - buttonSize))}px`;
-
-            if (headerActionColor) {
-                button.style.setProperty("--mwp-header-button-color", headerActionColor);
-                button.style.setProperty("color", headerActionColor, "important");
-            }
-        }
-
         button.dataset.collapsed = collapsed ? "true" : "false";
         button.setAttribute("aria-pressed", collapsed ? "true" : "false");
         button.setAttribute(

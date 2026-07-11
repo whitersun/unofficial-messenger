@@ -5,6 +5,7 @@ use tauri::{image::Image, Manager};
 use crate::tray::TRAY_ID;
 
 const ENABLE_TASKBAR_BADGE: bool = true;
+pub(crate) type BadgeState = Arc<Mutex<Option<i64>>>;
 
 pub(crate) fn unread_count_from_title(title: &str) -> Option<i64> {
     let start = title.find('(')?;
@@ -20,17 +21,23 @@ pub(crate) fn unread_count_from_title(title: &str) -> Option<i64> {
 
 pub(crate) fn update_taskbar_badge(
     window: &tauri::WebviewWindow,
-    badge_state: &Arc<Mutex<Option<i64>>>,
+    badge_state: &BadgeState,
     unread_count: Option<i64>,
 ) {
     apply_taskbar_badge(window, badge_state, BadgeUpdate::FromTitle(unread_count));
 }
 
-pub(crate) fn clear_taskbar_badge(
-    window: &tauri::WebviewWindow,
-    badge_state: &Arc<Mutex<Option<i64>>>,
-) {
+pub(crate) fn clear_taskbar_badge(window: &tauri::WebviewWindow, badge_state: &BadgeState) {
     apply_taskbar_badge(window, badge_state, BadgeUpdate::Clear);
+}
+
+#[tauri::command]
+pub(crate) fn clear_app_badge(app: tauri::AppHandle, badge_state: tauri::State<'_, BadgeState>) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+
+    clear_taskbar_badge(&window, badge_state.inner());
 }
 
 enum BadgeUpdate {
@@ -40,7 +47,7 @@ enum BadgeUpdate {
 
 fn apply_taskbar_badge(
     window: &tauri::WebviewWindow,
-    badge_state: &Arc<Mutex<Option<i64>>>,
+    badge_state: &BadgeState,
     update: BadgeUpdate,
 ) {
     if !ENABLE_TASKBAR_BADGE {

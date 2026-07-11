@@ -12,7 +12,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use app_chrome_script::APP_CHROME_SCRIPT;
-use badge::{clear_taskbar_badge, unread_count_from_title, update_taskbar_badge};
+use badge::{
+    clear_app_badge, clear_taskbar_badge, unread_count_from_title, update_taskbar_badge, BadgeState,
+};
 use clipboard::copy_image_to_clipboard;
 use navigation::{
     external_url_from_marked_navigation, image_url_from_copy_navigation, is_auth_navigation,
@@ -31,11 +33,16 @@ static POPUP_WINDOW_COUNTER: AtomicUsize = AtomicUsize::new(1);
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     normalize_startup_working_directory();
+    let badge_state: BadgeState = Arc::new(Mutex::new(None));
 
     tauri::Builder::default()
+        .manage(Arc::clone(&badge_state))
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![copy_image_to_clipboard])
-        .setup(|app| {
+        .invoke_handler(tauri::generate_handler![
+            clear_app_badge,
+            copy_image_to_clipboard
+        ])
+        .setup(move |app| {
             let mut window_config = app
                 .config()
                 .app
@@ -64,7 +71,6 @@ pub fn run() {
             let app_handle_for_navigation = app_handle.clone();
             let app_handle_for_new_window = app_handle.clone();
             let settings = Arc::new(Mutex::new(load_settings(&app_handle)));
-            let badge_state = Arc::new(Mutex::new(None));
             let badge_state_for_title = Arc::clone(&badge_state);
 
             create_tray(app, Arc::clone(&settings))?;

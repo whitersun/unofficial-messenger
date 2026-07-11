@@ -10,4 +10,5 @@ import "./app_chrome_script/thread_list.js";
 import "./app_chrome_script/image_actions.js";
 import "./app_chrome_script/load_overlay.js";
 import "./app_chrome_script/navigation.js";
+import "./app_chrome_script/badge.js";
 import "./app_chrome_script/init.js";
