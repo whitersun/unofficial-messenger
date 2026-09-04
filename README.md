@@ -1,5 +1,12 @@
 # unofficial-messenger-next
 
+[![Release](https://img.shields.io/github/v/release/whitersun/messenger?label=release)](https://github.com/whitersun/messenger/releases/latest)
+[![License](https://img.shields.io/github/license/whitersun/messenger?label=license)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/whitersun/messenger)
+[![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app/)
+[![Vue](https://img.shields.io/badge/Vue-3-42B883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
+[![Rust](https://img.shields.io/badge/Rust-Desktop-000000?logo=rust&logoColor=white)](https://www.rust-lang.org/)
+
 An unofficial desktop webview wrapper for Messenger, built with Tauri for low CPU and RAM usage.
 
 ## Downloads
