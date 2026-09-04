@@ -9,17 +9,51 @@
 
 An unofficial desktop webview wrapper for Messenger, built with Tauri for low CPU and RAM usage.
 
+## Why this exists
+
+Messenger works in a browser, but using it there is not always convenient:
+
+- You have to open the browser and navigate back to Messenger whenever you want to check a conversation.
+- When many tabs are open, the Messenger tab can be difficult to find or easy to close by accident.
+- Messenger has to compete with other tabs, extensions, and browser processes, which can make the experience feel heavier or less responsive.
+- A browser tab does not feel as immediate as a dedicated app that can be launched from the desktop, taskbar, dock, or app menu.
+- Keeping Messenger in its own window separates conversations from everyday browsing and makes switching between work and messages easier.
+- Desktop-oriented controls such as the system tray, update reminders, image tools, and account switching make Messenger more convenient to use throughout the day.
+
+This project exists to provide a focused, lightweight desktop home for Messenger without attempting to replace or reimplement the service itself.
+
+## What makes it different
+
+- **A dedicated Messenger window:** No need to search through browser tabs whenever a message arrives.
+- **Lightweight by design:** Built with Tauri and the system WebView instead of bundling a complete Electron browser runtime.
+- **The familiar Messenger experience:** The app loads Messenger directly, so conversations and supported web features remain familiar.
+- **Useful desktop integration:** Includes system tray support, update notifications, calls, image copy and zoom, and user switching.
+- **Cross-platform:** Release builds are available for Windows, macOS, and Linux.
+- **Open source and transparent:** The source code and release workflow are available for inspection, and the project is licensed under MIT.
+
+## Quick start
+
+1. Open the [latest release](https://github.com/whitersun/messenger/releases/latest), or use one of the direct downloads below.
+2. Download the installer for your operating system.
+3. Install and launch the app.
+4. Sign in on the Facebook/Messenger page displayed inside the app.
+5. Optionally pin the app to your taskbar or dock for quick access.
+
+> [!NOTE]
+> This is an unofficial project. Authentication happens directly on Facebook/Meta pages; the app does not receive or store your password.
+
 ## Downloads
 
-Install the latest build directly from the `v0.1.5` release:
+Install the latest available build:
 
 | Platform | Download |
 | --- | --- |
-| Windows | [Download for Windows](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.5/unofficial-messenger-next-windows.msi) |
-| macOS | [Download for macOS](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.5/unofficial-messenger-next-macos.dmg) |
-| Linux | [Download for Linux](https://github.com/whitersun/unofficial-messenger/releases/download/v0.1.5/unofficial-messenger-next-linux.deb) |
+| Windows | [Download MSI](https://github.com/whitersun/messenger/releases/latest/download/unofficial-messenger-next-windows.msi) |
+| macOS | [Download DMG](https://github.com/whitersun/messenger/releases/latest/download/unofficial-messenger-next-macos.dmg) |
+| Linux (Debian/Ubuntu) | [Download DEB](https://github.com/whitersun/messenger/releases/latest/download/unofficial-messenger-next-linux.deb) |
+| Linux (other distributions) | [Download AppImage](https://github.com/whitersun/messenger/releases/latest/download/unofficial-messenger-next-linux-x86_64.AppImage) |
 
-You can also open the [v0.1.5 release page](https://github.com/whitersun/unofficial-messenger/releases/tag/v0.1.5) and download the installer for your operating system from the assets.
+You can also open the [latest release page](https://github.com/whitersun/messenger/releases/latest) and choose an installer from the assets.
 
 The Windows installer is about 4,516 KB. After installation, the app uses about 12.3 MB of disk space.
 
