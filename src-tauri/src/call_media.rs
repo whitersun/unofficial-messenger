@@ -13,9 +13,8 @@ pub(crate) fn configure_call_media(_window: &tauri::WebviewWindow) {}
 #[cfg(target_os = "linux")]
 fn configure_linux_call_media(webview: tauri::webview::PlatformWebview) {
     use webkit2gtk::{
-        glib::prelude::Cast,
-        prelude::{PermissionRequestExt, SettingsExt, WebViewExt},
-        DeviceInfoPermissionRequest, UserMediaPermissionRequest,
+        glib::prelude::Cast, DeviceInfoPermissionRequest, PermissionRequestExt, SettingsExt,
+        UserMediaPermissionRequest, WebViewExt,
     };
 
     let webview = webview.inner();

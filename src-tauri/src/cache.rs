@@ -76,7 +76,7 @@ fn clear_windows_cache(
 
 #[cfg(target_os = "linux")]
 fn clear_cache_then_exit(webview: tauri::webview::PlatformWebview, app: tauri::AppHandle) {
-    use webkit2gtk::{prelude::WebViewExt, WebsiteDataManagerExtManual, WebsiteDataTypes};
+    use webkit2gtk::{WebViewExt, WebsiteDataManagerExtManual, WebsiteDataTypes};
 
     let Some(manager) = webview.inner().website_data_manager() else {
         app.exit(0);

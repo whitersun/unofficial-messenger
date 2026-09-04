@@ -32,7 +32,7 @@ jobs:
             artifact_name: windows-installer
           - name: macOS
             platform: macos-latest
-            bundle: dmg
+            bundle: app,dmg
             asset_name: unofficial-messenger-next-macos.dmg
             artifact_name: macos-installer
           - name: Linux
@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -64,7 +64,7 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: bun run tauri build --bundles ${{ matrix.bundle }}
+        run: bun run tauri build --config src-tauri/tauri.release.conf.json --bundles ${{ matrix.bundle }}
 
       - name: Collect Windows installer
         if: matrix.platform == 'windows-latest'
@@ -124,7 +124,7 @@ jobs:
           cp "$updater.sig" "release-assets/unofficial-messenger-next-linux-x86_64.AppImage.sig"
 
       - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
           path: release-assets/*
@@ -136,7 +136,7 @@ jobs:
     needs: build
     steps:
       - name: Download installer artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-assets
           merge-multiple: true

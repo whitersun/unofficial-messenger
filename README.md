@@ -68,12 +68,6 @@ The Windows installer is about 4,516 KB. After installation, the app uses about 
 - Supports toggle users.
 - Checks for signed GitHub updates after Messenger finishes initializing and then once per hour, with update progress and a tray reminder.
 
-## Publishing updates
-
-The release workflow publishes the platform installers, signed updater artifacts, and `latest.json` used by the in-app updater. Add the private key that matches `src-tauri/.updater-private/updater.key.pub` to the repository secret `TAURI_SIGNING_PRIVATE_KEY`. If the key has a password, add it as `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
-
-Keep the version in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` in sync before pushing a `v*` tag. The updater private key must remain private and must not be committed.
-
 ## Disclaimer
 
 This project is an unofficial, non-commercial desktop wrapper for Messenger Web.
