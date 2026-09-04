@@ -1,61 +1,80 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "unofficial-messenger-next",
-  "version": "0.1.5",
-  "identifier": "unofficial-messenger-next",
-  "build": {
-    "beforeBuildCommand": "bun run build",
-    "frontendDist": "../dist"
-  },
-  "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": " Messenger",
-        "url": "https://www.messenger.com/",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 420,
-        "minHeight": 520,
-        "resizable": true,
-        "create": false
-      }
-    ],
-    "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "unofficial-messenger-next",
+    "version": "0.1.5",
+    "identifier": "unofficial-messenger-next",
+    "build": {
+        "beforeBuildCommand": "bun run build",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "label": "main",
+                "title": " Messenger",
+                "url": "https://www.facebook.com/messages/",
+                "width": 1200,
+                "height": 800,
+                "minWidth": 420,
+                "minHeight": 520,
+                "resizable": true,
+                "create": false
+            }
+        ],
+        "security": {
+            "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+        }
+    },
+    "bundle": {
+        "active": true,
+        "createUpdaterArtifacts": true,
+        "targets": "all",
+        "windows": {
+            "nsis": {
+                "installerHooks": "windows/nsis/uninstall-hooks.nsh"
+            },
+            "wix": {
+                "fragmentPaths": [
+                    "windows/wix/cleanup-app-data.wxs"
+                ],
+                "componentRefs": [
+                    "CleanupAppDataActionAnchor"
+                ]
+            }
+        },
+        "linux": {
+            "deb": {
+                "preInstallScript": "linux/deb/preinstall.sh",
+                "postRemoveScript": "linux/deb/postremove.sh",
+                "recommends": [
+                    "gstreamer1.0-plugins-bad"
+                ]
+            },
+            "rpm": {
+                "preInstallScript": "linux/rpm/preinstall.sh",
+                "postRemoveScript": "linux/rpm/postremove.sh",
+                "recommends": [
+                    "gstreamer1-plugins-bad-free"
+                ]
+            }
+        },
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ]
+    },
+    "plugins": {
+        "updater": {
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaW5pIHB1YmxpYyBrZXk6IEQzOEY5MEYzNThDNzlERkEKUldUNm5jZFk4NUNQMDdjTytIQVVSMHRvcGcxQmVmQUlrV1phcTYvdC94WmJQRUVvNytGVHhCMDMK",
+            "endpoints": [
+                "https://github.com/whitersun/messenger/releases/latest/download/latest.json"
+            ],
+            "windows": {
+                "installMode": "passive"
+            }
+        }
     }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "windows": {
-      "nsis": {
-        "installerHooks": "windows/nsis/uninstall-hooks.nsh"
-      },
-      "wix": {
-        "fragmentPaths": ["windows/wix/cleanup-app-data.wxs"],
-        "componentRefs": ["CleanupAppDataActionAnchor"]
-      }
-    },
-    "linux": {
-      "deb": {
-        "preInstallScript": "linux/deb/preinstall.sh",
-        "postRemoveScript": "linux/deb/postremove.sh"
-      },
-      "rpm": {
-        "preInstallScript": "linux/rpm/preinstall.sh",
-        "postRemoveScript": "linux/rpm/postremove.sh"
-      }
-    },
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
-  }
 }
-
-
-

@@ -14,17 +14,18 @@
     const notificationPromptStyleId = "tauri-messenger-notification-permission-style";
     const notificationPromptDismissedKey = "tauri-messenger-notification-permission-dismissed";
     const notificationPromptStableMs = 1500;
-    const threadListToggleButtonId = "tauri-messenger-thread-list-toggle";
+    const updateModalId = "tauri-messenger-update-modal";
+    const updateStyleId = "tauri-messenger-update-style";
+    const updateCheckIntervalMs = 60 * 60 * 1000;
     const externalNavigationParam = "__tauri_external";
     const copyImageNavigationParam = "__tauri_copy_image";
     const loadTimeoutMs = 15000;
-    const messengerCardMinWidthProperty = "--messenger-card-min-width";
-    const messengerCardMaxWidthProperty = "--messenger-card-max-width";
     let notificationPromptEligibleSince = 0;
     let notificationPromptSyncTimer = 0;
-    let messengerThreadListCollapsed = false;
-    let messengerThreadListHasManagedStyle = false;
-    let messengerThreadListCollapseSyncTimer = 0;
+    let availableUpdate = null;
+    let updateCheckStarted = false;
+    let updateReadyPollTimer = 0;
+    let updateHourlyTimer = 0;
 
     const isMessengerOrFacebookHost = (host) => {
         return host === "messenger.com"
@@ -103,4 +104,3 @@
         root?.style.setProperty("overflow-y", "hidden", "important");
         body?.style.setProperty("overflow-y", "hidden", "important");
     };
-

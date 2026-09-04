@@ -20,6 +20,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
 arboard = "3"
 base64 = "0.22"
 image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
@@ -27,6 +28,16 @@ reqwest = { version = "0.12.28", default-features = false, features = ["blocking
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.38"
+windows-core = "0.61"
 
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = { version = "2", features = ["v2_40"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["NSDate", "NSSet", "NSString"] }
+objc2-web-kit = { version = "0.3", default-features = false, features = ["block2", "WKWebView", "WKWebViewConfiguration", "WKWebsiteDataRecord", "WKWebsiteDataStore"] }
 
 

@@ -1,10 +1,13 @@
 mod app_chrome_script;
 mod badge;
+mod cache;
+mod call_media;
 mod clipboard;
 mod navigation;
 mod settings;
 mod startup;
 mod tray;
+mod updater;
 mod window;
 
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
@@ -15,6 +18,7 @@ use app_chrome_script::APP_CHROME_SCRIPT;
 use badge::{
     clear_app_badge, clear_taskbar_badge, unread_count_from_title, update_taskbar_badge, BadgeState,
 };
+use call_media::configure_call_media;
 use clipboard::copy_image_to_clipboard;
 use navigation::{
     external_url_from_marked_navigation, image_url_from_copy_navigation, is_auth_navigation,
@@ -26,6 +30,7 @@ use startup::{
 };
 use tauri::{window::Color, Manager, WebviewUrl, WebviewWindowBuilder};
 use tray::create_tray;
+use updater::{check_for_update, defer_update, install_update, UpdateState};
 use window::{hide_main_window, navigate_main_window, title_bar_text};
 
 static POPUP_WINDOW_COUNTER: AtomicUsize = AtomicUsize::new(1);
@@ -37,10 +42,15 @@ pub fn run() {
 
     tauri::Builder::default()
         .manage(Arc::clone(&badge_state))
+        .manage(UpdateState::default())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             clear_app_badge,
-            copy_image_to_clipboard
+            copy_image_to_clipboard,
+            check_for_update,
+            defer_update,
+            install_update
         ])
         .setup(move |app| {
             let mut window_config = app
@@ -56,7 +66,7 @@ pub fn run() {
                 _ => None,
             };
 
-            if launched_from_windows_startup {
+            if launched_from_windows_startup || cfg!(target_os = "linux") {
                 window_config.url = WebviewUrl::External(
                     "about:blank"
                         .parse()
@@ -97,6 +107,7 @@ pub fn run() {
                     }
                 })
                 .build()?;
+            configure_call_media(&window);
             if let Err(error) = window.set_background_color(Some(Color(247, 248, 251, 255))) {
                 eprintln!("failed to set startup background color: {error}");
             }
@@ -106,14 +117,16 @@ pub fn run() {
                 }
             }
 
-            if launched_from_windows_startup {
-                if let Some(startup_url) = startup_url {
+            if let Some(startup_url) = startup_url {
+                if launched_from_windows_startup {
                     let app_handle_for_startup_load = app_handle.clone();
 
                     std::thread::spawn(move || {
                         std::thread::sleep(Duration::from_millis(STARTUP_LOAD_DELAY_MS));
                         navigate_main_window(&app_handle_for_startup_load, startup_url);
                     });
+                } else if cfg!(target_os = "linux") {
+                    navigate_main_window(&app_handle, startup_url);
                 }
             }
 
@@ -218,8 +231,17 @@ fn create_popup_window(
     let label_for_navigation = label.clone();
     let has_loaded_real_page = Arc::new(AtomicBool::new(false));
     let has_loaded_real_page_for_navigation = Arc::clone(&has_loaded_real_page);
+    let initial_url = if cfg!(target_os = "linux") {
+        WebviewUrl::External(
+            "about:blank"
+                .parse()
+                .expect("about:blank should be a valid URL"),
+        )
+    } else {
+        WebviewUrl::External(url.clone())
+    };
 
-    WebviewWindowBuilder::new(app, label, WebviewUrl::External(url.clone()))
+    let window = WebviewWindowBuilder::new(app, label, initial_url)
         .title("Messenger")
         .inner_size(980.0, 720.0)
         .min_inner_size(420.0, 520.0)
@@ -245,7 +267,15 @@ fn create_popup_window(
                 eprintln!("failed to update popup window title: {error}");
             }
         })
-        .build()
+        .build()?;
+
+    configure_call_media(&window);
+
+    if cfg!(target_os = "linux") {
+        window.navigate(url)?;
+    }
+
+    Ok(window)
 }
 
 fn handle_popup_navigation_request(

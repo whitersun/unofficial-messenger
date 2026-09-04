@@ -1,0 +1,164 @@
+#tauri-messenger-update-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    color: #1c1e21;
+    background: rgba(15, 18, 24, 0.56);
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    backdrop-filter: blur(4px);
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-card {
+    width: min(440px, calc(100vw - 28px));
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+    box-sizing: border-box;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-badge {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 16px;
+    color: #ffffff;
+    background: #0866ff;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-title {
+    color: #16181d;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 25px;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-message {
+    margin-top: 8px;
+    color: #59616d;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-notes {
+    max-height: 136px;
+    margin-top: 14px;
+    padding: 12px;
+    overflow: auto;
+    color: #414853;
+    background: #f5f6f8;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: pre-wrap;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+#tauri-messenger-update-modal button {
+    min-height: 38px;
+    padding: 0 16px;
+    color: #303640;
+    background: #edf0f4;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+#tauri-messenger-update-modal button[data-action="install"] {
+    color: #ffffff;
+    background: #0866ff;
+}
+
+#tauri-messenger-update-modal button:hover {
+    filter: brightness(0.96);
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-progress {
+    position: relative;
+    height: 8px;
+    margin-top: 22px;
+    overflow: hidden;
+    background: #e5e9ef;
+    border-radius: 999px;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-progress-bar {
+    width: 0;
+    height: 100%;
+    background: #0866ff;
+    border-radius: inherit;
+    transition: width 160ms ease;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-progress.is-indeterminate .tauri-messenger-update-progress-bar {
+    width: 38%;
+    animation: tauri-messenger-update-progress 1.1s ease-in-out infinite;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-detail {
+    min-height: 18px;
+    margin-top: 9px;
+    color: #727b87;
+    font-size: 12px;
+    line-height: 18px;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-error {
+    color: #b42318;
+    overflow-wrap: anywhere;
+}
+
+#tauri-messenger-update-modal .tauri-messenger-update-close {
+    display: block;
+    margin: 18px 0 0 auto;
+}
+
+@keyframes tauri-messenger-update-progress {
+    from { transform: translateX(-110%); }
+    to { transform: translateX(290%); }
+}
+
+@media (prefers-color-scheme: dark) {
+    #tauri-messenger-update-modal .tauri-messenger-update-card {
+        color: #f5f7fb;
+        background: #252830;
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    #tauri-messenger-update-modal .tauri-messenger-update-title {
+        color: #ffffff;
+    }
+
+    #tauri-messenger-update-modal .tauri-messenger-update-message,
+    #tauri-messenger-update-modal .tauri-messenger-update-detail {
+        color: #b7bec9;
+    }
+
+    #tauri-messenger-update-modal .tauri-messenger-update-notes {
+        color: #d7dce4;
+        background: #1c1f26;
+    }
+
+    #tauri-messenger-update-modal .tauri-messenger-update-progress {
+        background: #414650;
+    }
+}

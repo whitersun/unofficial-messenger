@@ -1,9 +1,8 @@
 html, body {
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: hidden !important;
+    height: 100%;
 }
-
 html.tauri-messenger-lock-body-overflow,
 html.tauri-messenger-lock-body-overflow body,
 html#facebook.tauri-messenger-lock-body-overflow,
@@ -33,54 +32,5 @@ table, form {
         width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-    }
-}
-
-#tauri-messenger-thread-list-toggle {
-    --thread-size: 34px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-
-    position: fixed;
-    left: max(19px, env(safe-area-inset-left));
-    bottom: max(150px, env(safe-area-inset-bottom));
-    width: var(--thread-size);
-    height: var(--thread-size);
-
-    padding: 0;
-    color: var(--primary-icon, #bcc0c4);
-    background: transparent;
-    border: 0;
-    border-radius: 8px;
-    cursor: pointer;
-    z-index: 2147483645;
-}
-
-html.tauri-messenger-thread-list-toggle-visible #tauri-messenger-thread-list-toggle {
-    display: flex;
-}
-
-#tauri-messenger-thread-list-toggle:hover,
-#tauri-messenger-thread-list-toggle:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
-    outline: none;
-}
-
-#tauri-messenger-thread-list-toggle svg {
-    width: 24px;
-    height: 24px;
-    display: block;
-    fill: none;
-    pointer-events: none;
-}
-
-#tauri-messenger-thread-list-toggle[data-collapsed="true"] svg {
-    transform: scaleX(-1);
-}
-
-@media (max-width: 719.98px) {
-    #tauri-messenger-thread-list-toggle {
-        display: none !important;
     }
 }

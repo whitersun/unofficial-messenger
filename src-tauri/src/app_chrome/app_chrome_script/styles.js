@@ -78,3 +78,15 @@
         parent.appendChild(style);
     };
 
+    const ensureUpdateStyles = () => {
+        const parent = document.head || document.documentElement;
+
+        if (!parent || document.getElementById(updateStyleId)) {
+            return;
+        }
+
+        const style = document.createElement("style");
+        style.id = updateStyleId;
+        style.textContent = updateStyleText;
+        parent.appendChild(style);
+    };

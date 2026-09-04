@@ -80,7 +80,7 @@
             && style.pointerEvents !== "none";
     };
 
-    const hasVisibleMessengerBlockingDialog = () => {
+    const hasVisibleMessengerBlockingSurface = () => {
         const body = document.body;
 
         if (!body) {
@@ -90,6 +90,10 @@
         return Array.from(body.querySelectorAll([
             '[role="dialog"]',
             '[aria-modal="true"]',
+            '[role="menu"]',
+            '[role="listbox"]',
+            '[aria-expanded="true"][aria-haspopup]',
+            '[data-popper-placement]',
             '[data-visualcompletion="ignore-dynamic"] [role="dialog"]'
         ].join(","))).some((element) => {
             if (element.id === notificationPromptId || element.closest(`#${notificationPromptId}`)) {
@@ -168,7 +172,7 @@
             return false;
         }
 
-        if (hasVisibleMessengerBlockingDialog()) {
+        if (hasVisibleMessengerBlockingSurface()) {
             notificationPromptEligibleSince = 0;
             return false;
         }
@@ -249,4 +253,3 @@
         window.clearTimeout(notificationPromptSyncTimer);
         notificationPromptSyncTimer = window.setTimeout(syncNotificationPermissionPrompt, 250);
     };
-
