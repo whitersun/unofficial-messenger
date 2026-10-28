@@ -1,0 +1,23 @@
+#tauri-messenger-download-notice {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483647;
+    max-width: min(360px, calc(100vw - 40px));
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #242526;
+    color: #fff;
+    box-shadow: 0 4px 20px #0002;
+    font: 14px/1.5 system-ui, sans-serif;
+    pointer-events: none;
+}
+
+#tauri-messenger-download-notice span {
+    display: block;
+    overflow: hidden;
+    color: #ddd;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}

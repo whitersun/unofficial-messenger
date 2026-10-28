@@ -3,6 +3,7 @@ mod badge;
 mod cache;
 mod call_media;
 mod clipboard;
+mod downloads;
 mod navigation;
 mod settings;
 mod startup;
@@ -20,6 +21,7 @@ use badge::{
 };
 use call_media::configure_call_media;
 use clipboard::copy_image_to_clipboard;
+use downloads::handle_download;
 use navigation::{
     external_url_from_marked_navigation, image_url_from_copy_navigation, is_auth_navigation,
     open_in_system_browser, should_keep_in_webview, should_open_in_app,
@@ -87,6 +89,7 @@ pub fn run() {
 
             let window = WebviewWindowBuilder::from_config(app, &window_config)?
                 .initialization_script(APP_CHROME_SCRIPT)
+                .on_download(handle_download)
                 .on_navigation(move |url| {
                     handle_navigation_request(&app_handle_for_navigation, url)
                 })
@@ -247,6 +250,7 @@ fn create_popup_window(
         .min_inner_size(420.0, 520.0)
         .window_features(features)
         .initialization_script(APP_CHROME_SCRIPT)
+        .on_download(handle_download)
         .on_navigation(move |url| {
             handle_popup_navigation_request(
                 &app_handle_for_navigation,

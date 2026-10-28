@@ -106,7 +106,27 @@
         ));
     };
 
+    const isFileAttachmentLink = (anchor, url) => {
+        const fileExtension = /\.(?:pdf|docx?|xlsx?|pptx?|odt|ods|odp|rtf|txt|csv|zip|rar|7z|tar|gz|epub)(?:$|[\s?#])/i;
+        const filenames = [url.pathname, url.searchParams.get("filename") || "", url.searchParams.get("name") || ""];
+
+        return filenames.some((filename) => fileExtension.test(filename))
+            || (isMessengerMediaUrl(url) && fileExtension.test(visibleTextFor(anchor)));
+    };
+
     const externalUrlForClick = (anchor, url) => {
+        // Messenger can resolve/decrypt a file only after its own click handler runs.
+        // Leave download links and placeholder links to that handler and the WebView.
+        const href = anchor.getAttribute("href")?.trim();
+        if (!href || href.startsWith("#") || anchor.hasAttribute("download")) {
+            return null;
+        }
+
+        const currentUrl = new URL(window.location.href);
+        if (url.origin === currentUrl.origin && url.pathname === currentUrl.pathname && url.search === currentUrl.search) {
+            return null;
+        }
+
         if (!["http:", "https:"].includes(url.protocol) || isShellNavigationLink(anchor, url)) {
             return null;
         }
@@ -117,6 +137,11 @@
 
         if (isCurrentAuthSurface() && isMessengerOrFacebookHost(url.hostname.toLowerCase())) {
             return null;
+        }
+
+        // A document's file icon is not an inline image preview.
+        if (isFileAttachmentLink(anchor, url)) {
+            return url;
         }
 
         if (hasInlineMedia(anchor) && isMessengerMediaUrl(url)) {
