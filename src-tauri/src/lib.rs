@@ -88,6 +88,8 @@ pub fn run() {
             create_tray(app, Arc::clone(&settings))?;
 
             let window = WebviewWindowBuilder::from_config(app, &window_config)?
+                // Let Messenger receive HTML5 file drops instead of Tauri drag-drop events.
+                .disable_drag_drop_handler()
                 .initialization_script(APP_CHROME_SCRIPT)
                 .on_download(handle_download)
                 .on_navigation(move |url| {
@@ -245,6 +247,7 @@ fn create_popup_window(
     };
 
     let window = WebviewWindowBuilder::new(app, label, initial_url)
+        .disable_drag_drop_handler()
         .title("Messenger")
         .inner_size(980.0, 720.0)
         .min_inner_size(420.0, 520.0)
